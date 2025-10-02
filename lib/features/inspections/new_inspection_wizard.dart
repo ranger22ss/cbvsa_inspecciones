@@ -26,7 +26,7 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
   final _phoneCtrl = TextEditingController();
 
   // Paso B — Plantilla (NO nulo)
-  String _templateCode = 'pequeno';
+  String _templateCode = 'comercio_pequeno';
 
   // Paso C — Respuestas, notas y fotos
   // answer: 'yes' | 'no' | 'na'
@@ -47,8 +47,8 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
       _addrCtrl.text = (ex['direccion_rut'] ?? '') as String;
       _respCtrl.text = (ex['responsible'] ?? '') as String;
       _phoneCtrl.text = (ex['phone'] ?? '') as String;
-      final t = (ex['tipo_inspeccion'] ?? 'pequeno') as String;
-      if (t.isNotEmpty) _templateCode = t;
+      final t = normalizeTemplateCode(ex['tipo_inspeccion'] as String?);
+      _templateCode = t;
 
       final Map<String, dynamic>? ans =
           ex['answers'] == null ? null : Map<String, dynamic>.from(ex['answers'] as Map);

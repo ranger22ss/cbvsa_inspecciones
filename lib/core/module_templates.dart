@@ -1,3 +1,5 @@
+import 'templates.dart';
+
 class AnswerType {
   static const yn = 'yn';   // Sí / No / N/A -> suma puntos solo con "sí"
   static const abc = 'abc'; // A / B / C     -> usa scoreMap
@@ -130,8 +132,9 @@ final industria = ModuleTemplateSet(
   ],
 );
 
-ModuleTemplateSet templatesByType(String tipo) {
-  switch (tipo) {
+ModuleTemplateSet templatesByType(String? tipo) {
+  final normalized = normalizeTemplateCode(tipo);
+  switch (normalized) {
     case 'comercio_grande':
       return comercioGrande;
     case 'estacion_servicio':
