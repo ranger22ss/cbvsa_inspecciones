@@ -35,9 +35,7 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
     try {
       final supabase = ref.read(supabaseProvider);
       final user = supabase.auth.currentUser!;
-      final aprobado = widget.aprobado;
 
-      // ⚠️ Payload SIN claves viejas (NO enviar establishment_name ni template_type)
       final payload = {
         'inspector_id'      : user.id,
         'radicado'          : widget.baseData['radicado'],
@@ -49,11 +47,11 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
         'acompanante'       : widget.baseData['acompanante'] ?? '',
         'foto_fachada_url'  : widget.baseData['foto_fachada_url'],
         'visita_anterior'   : widget.baseData['visita_anterior'],  // jsonb
-        'tipo_inspeccion'   : widget.tipoInspeccion,               // <- correcto
-        'modules'           : widget.modules,                      // jsonb
+        'tipo_inspeccion'   : widget.tipoInspeccion,
+        'modules'           : widget.modules,                      // jsonb con preguntas, respuestas y fotos
         'resultado'         : {
           'puntaje_total': widget.totalScore,
-          'aprobado'     : aprobado,
+          'aprobado'     : widget.aprobado,
         },
       };
 
@@ -128,6 +126,62 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
             backgroundColor: widget.aprobado ? Colors.green[100] : Colors.red[100],
           ),
           const SizedBox(height: 16),
+
+          // 🔥 Detalle de módulos
+          Text('Detalle de la evaluación', style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 8),
+          for (final mod in widget.modules) ...[
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(mod['titulo'] ?? 'Módulo',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const Divider(),
+                    for (final item in (mod['items'] as List)) ...[
+                      Text(item['pregunta_texto'] ?? '',
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
+                      Text('Respuesta: ${item['respuesta']} — Puntaje: ${item['puntaje']}'),
+                      if ((item['fotos'] as List).isNotEmpty) ...[
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            for (final foto in (item['fotos'] as List))
+                              Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Image.network(
+                                    foto['url'],
+                                    height: 80,
+                                    width: 80,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  if (foto['observacion'] != null)
+                                    SizedBox(
+                                        width: 80,
+                                        child: Text(
+                                          foto['observacion'],
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(fontSize: 10),
+                                        )),
+                                ],
+                              )
+                          ],
+                        ),
+                      ],
+                      const Divider(),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 16),
+
           Text('Conclusión', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Text(_conclusionTexto(widget.aprobado, nombre, direccion)),
@@ -165,4 +219,3 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
     );
   }
 }
-

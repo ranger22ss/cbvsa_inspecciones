@@ -41,7 +41,6 @@ class _AddInspectionPageState extends ConsumerState<AddInspectionPage> {
       _fotoFachadaFile = File(picked.path);
     });
 
-    // Subir inmediatamente
     final supabase = ref.read(supabaseProvider);
     final user = supabase.auth.currentUser!;
     final storage = StorageService(supabase);

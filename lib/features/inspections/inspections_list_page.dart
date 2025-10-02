@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
 import '../../core/providers.dart';
 import '../../core/templates.dart';            // 👈 IMPORTA PLANTILLAS
 import 'new_inspection_wizard.dart';
+import 'inspection_detail_page.dart';         // 👈 IMPORTAMOS EL DETALLE
 
+// Provider para traer las inspecciones del usuario actual
 final myInspectionsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final supabase = ref.watch(supabaseProvider);
   final user = supabase.auth.currentUser;
@@ -50,7 +52,7 @@ class InspectionsListPage extends ConsumerWidget {
               final name = r['nombre_comercial'] ?? '—';
               final score = r['score'] ?? 0;
               final template = r['tipo_inspeccion'] ?? '';
-              final date = (r['inspection_date'] ?? '').toString();
+              final date = (r['fecha_inspeccion'] ?? '').toString();
               final ok = _isApproved(r);
 
               return ListTile(
@@ -60,19 +62,19 @@ class InspectionsListPage extends ConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('$score pts'),
-                    Text(ok ? 'APROBADO' : 'NO APROBADO',
-                        style: TextStyle(
-                          color: ok ? Colors.green : Colors.red,
-                          fontWeight: FontWeight.w600,
-                        )),
+                    Text(
+                      ok ? 'APROBADO' : 'NO APROBADO',
+                      style: TextStyle(
+                        color: ok ? Colors.green : Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ],
                 ),
                 onTap: () async {
+                  // 👉 Ahora abrimos la pantalla de detalle correctamente
                   await Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => NewInspectionWizard(
-                      existing: r,
-                      inspectionId: r['id'] as String,
-                    ),
+                    builder: (_) => InspectionDetailPage(inspection: r, inspectionId: '',),
                   ));
                   // refrescar al volver
                   // ignore: use_build_context_synchronously
@@ -100,4 +102,3 @@ class InspectionsListPage extends ConsumerWidget {
     );
   }
 }
-

@@ -5,9 +5,9 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/providers.dart';
 import '../../core/storage.dart';
-import '../../core/module_templates.dart';
-import '../../core/templates.dart';
+import '../../core/module_templates.dart'; // 👈 AQUÍ ESTÁN ModuleTemplateSet, AnswerType, ModuleQuestion
 import 'summary_conclusion_page.dart';
+import '../../core/templates.dart';
 
 class ModulesEvaluationPage extends ConsumerStatefulWidget {
   final Map<String, dynamic> baseData;   // de Hoja 1
@@ -19,20 +19,23 @@ class ModulesEvaluationPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ModulesEvaluationPage> createState() => _ModulesEvaluationPageState();
+  ConsumerState<ModulesEvaluationPage> createState() =>
+      _ModulesEvaluationPageState();
 }
 
 class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
+  late final String _tipoNormalizado;
   late final ModuleTemplateSet _tpl;
   final _picker = ImagePicker();
-  final Map<String, String> _answers = {}; // key=mIndex_qId -> 'yes'|'no'|'na' o 'A'|'B'|'C'
-  final Map<String, List<Map<String, String>>> _photos = {}; // key -> [{url,observacion}]
+  final Map<String, String> _answers = {}; 
+  final Map<String, List<Map<String, String>>> _photos = {}; 
   int _score = 0;
 
   @override
   void initState() {
     super.initState();
-    _tpl = templatesByType(widget.tipoInspeccion);
+    _tipoNormalizado = normalizeTemplateCode(widget.tipoInspeccion);
+    _tpl = templatesByType(_tipoNormalizado);
     _recalc();
   }
 
@@ -82,7 +85,9 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
     final storage = StorageService(supabase);
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Subiendo foto...')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Subiendo foto...')),
+    );
 
     try {
       final url = await storage.uploadImage(
@@ -93,10 +98,14 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
       final list = _photos[key] ?? <Map<String, String>>[];
       list.add({'url': url, 'observacion': ''});
       setState(() => _photos[key] = list);
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Foto subida ✔')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Foto subida ✔')),
+      );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error subiendo foto: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error subiendo foto: $e')),
+      );
     }
   }
 
@@ -152,7 +161,7 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
               const SizedBox(width: 8),
               Expanded(
                 child: TextFormField(
-                  initialValue: obs,
+                  initialValue: obs, // 👈 se usa initialValue, no value
                   onChanged: (v) => list[i]['observacion'] = v,
                   decoration: const InputDecoration(labelText: 'Observación (opcional)'),
                   maxLines: 2,
@@ -212,7 +221,7 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => SummaryConclusionPage(
         baseData: widget.baseData,
-        tipoInspeccion: widget.tipoInspeccion,
+        tipoInspeccion: _tipoNormalizado,
         modules: modulesJson,
         passingScore: _tpl.passingScore,
         totalScore: _score,
@@ -228,8 +237,10 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('Puntaje mínimo: ${_tpl.passingScore} — Actual: $_score',
-              style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            'Puntaje mínimo: ${_tpl.passingScore} — Actual: $_score',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           const SizedBox(height: 12),
           for (int m = 0; m < _tpl.modules.length; m++) ...[
             Card(
@@ -238,7 +249,8 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_tpl.modules[m].title, style: Theme.of(context).textTheme.titleMedium),
+                    Text(_tpl.modules[m].title,
+                        style: Theme.of(context).textTheme.titleMedium),
                     const SizedBox(height: 8),
                     for (final q in _tpl.modules[m].items) ...[
                       Text(q.text, style: const TextStyle(fontWeight: FontWeight.w600)),
