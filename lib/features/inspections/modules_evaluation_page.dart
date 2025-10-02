@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/providers.dart';
 import '../../core/storage.dart';
 import '../../core/module_templates.dart';
+import '../../core/templates.dart';
 import 'summary_conclusion_page.dart';
 
 class ModulesEvaluationPage extends ConsumerStatefulWidget {

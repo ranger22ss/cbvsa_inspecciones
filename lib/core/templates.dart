@@ -6,7 +6,7 @@ class Question {
 }
 
 class TemplateDef {
-  final String code; // 'pequeno', 'grande', ...
+  final String code; // 'comercio_pequeno', 'comercio_grande', ...
   final String name;
   final int passingScore; // puntaje mínimo para “aprobado”
   final List<Question> questions;
@@ -21,7 +21,7 @@ class TemplateDef {
 
 const templates = <TemplateDef>[
   TemplateDef(
-    code: 'pequeno',
+    code: 'comercio_pequeno',
     name: 'Comercio pequeño',
     passingScore: 70,
     questions: [
@@ -33,7 +33,7 @@ const templates = <TemplateDef>[
     ],
   ),
   TemplateDef(
-    code: 'grande',
+    code: 'comercio_grande',
     name: 'Comercio grande',
     passingScore: 80,
     questions: [
@@ -45,7 +45,7 @@ const templates = <TemplateDef>[
     ],
   ),
   TemplateDef(
-    code: 'estacion',
+    code: 'estacion_servicio',
     name: 'Estación de servicio',
     passingScore: 85,
     questions: [
@@ -70,7 +70,86 @@ const templates = <TemplateDef>[
   ),
 ];
 
+String _stripDiacritics(String value) {
+  const Map<String, String> replacements = {
+    'á': 'a',
+    'à': 'a',
+    'ä': 'a',
+    'â': 'a',
+    'ã': 'a',
+    'å': 'a',
+    'é': 'e',
+    'è': 'e',
+    'ë': 'e',
+    'ê': 'e',
+    'í': 'i',
+    'ì': 'i',
+    'ï': 'i',
+    'î': 'i',
+    'ó': 'o',
+    'ò': 'o',
+    'ö': 'o',
+    'ô': 'o',
+    'õ': 'o',
+    'ú': 'u',
+    'ù': 'u',
+    'ü': 'u',
+    'û': 'u',
+    'ñ': 'n',
+  };
+
+  final buffer = StringBuffer();
+  for (final rune in value.runes) {
+    final char = String.fromCharCode(rune);
+    buffer.write(replacements[char] ?? char);
+  }
+  return buffer.toString();
+}
+
+String _normalizeKey(String? raw) {
+  if (raw == null) return '';
+  final trimmed = raw.trim();
+  if (trimmed.isEmpty) return '';
+
+  final withoutDiacritics = _stripDiacritics(trimmed).toLowerCase();
+  final collapsed = withoutDiacritics
+      .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+      .replaceAll(RegExp(r'_+'), '_');
+  return collapsed.replaceAll(RegExp(r'^_|_$'), '');
+}
+
+String normalizeTemplateCode(String? code) {
+  final key = _normalizeKey(code);
+  switch (key) {
+    case 'comercio_pequeno':
+    case 'comerciopequeno':
+    case 'comercio_pequena':
+    case 'comerciominorista':
+    case 'pequeno':
+    case 'pequena':
+    case 'pequenia':
+      return 'comercio_pequeno';
+    case 'comercio_grande':
+    case 'comerciogrande':
+    case 'grande':
+    case 'gran_comercio':
+      return 'comercio_grande';
+    case 'estacion_servicio':
+    case 'estacionservicio':
+    case 'estacion_de_servicio':
+    case 'estacion':
+    case 'gasolinera':
+      return 'estacion_servicio';
+    case 'industria':
+    case 'industrial':
+      return 'industria';
+    default:
+      return templates.first.code;
+  }
+}
+
 TemplateDef templateByCode(String code) {
-  return templates.firstWhere((t) => t.code == code, orElse: () => templates.first);
+  final normalized = normalizeTemplateCode(code);
+  return templates.firstWhere((t) => t.code == normalized, orElse: () => templates.first);
 }
 

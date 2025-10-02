@@ -22,7 +22,7 @@ class InspectionsListPage extends ConsumerWidget {
 
   bool _isApproved(Map<String, dynamic> row) {
     try {
-      final template = (row['template_type'] ?? '').toString();
+      final template = (row['tipo_inspeccion'] ?? '').toString();
       final score = (row['score'] ?? 0) as int;
       final t = templates.firstWhere((e) => e.code == template);
       return score >= t.passingScore;
@@ -47,9 +47,9 @@ class InspectionsListPage extends ConsumerWidget {
             separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, i) {
               final r = rows[i];
-              final name = r['establishment_name'] ?? '—';
+              final name = r['nombre_comercial'] ?? '—';
               final score = r['score'] ?? 0;
-              final template = r['template_type'] ?? '';
+              final template = r['tipo_inspeccion'] ?? '';
               final date = (r['inspection_date'] ?? '').toString();
               final ok = _isApproved(r);
 
