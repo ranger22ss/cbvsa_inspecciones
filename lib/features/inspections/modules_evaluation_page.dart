@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/providers.dart';
 import '../../core/storage.dart';
 import '../../core/module_templates.dart';
+import '../../core/templates.dart';
 import 'summary_conclusion_page.dart';
 
 class ModulesEvaluationPage extends ConsumerStatefulWidget {
@@ -22,6 +23,7 @@ class ModulesEvaluationPage extends ConsumerStatefulWidget {
 }
 
 class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
+  late final String _tipoNormalizado;
   late final ModuleTemplateSet _tpl;
   final _picker = ImagePicker();
   final Map<String, String> _answers = {}; // key=mIndex_qId -> 'yes'|'no'|'na' o 'A'|'B'|'C'
@@ -31,7 +33,8 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
   @override
   void initState() {
     super.initState();
-    _tpl = templatesByType(widget.tipoInspeccion);
+    _tipoNormalizado = normalizeTemplateCode(widget.tipoInspeccion);
+    _tpl = templatesByType(_tipoNormalizado);
     _recalc();
   }
 
@@ -211,7 +214,7 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => SummaryConclusionPage(
         baseData: widget.baseData,
-        tipoInspeccion: widget.tipoInspeccion,
+        tipoInspeccion: _tipoNormalizado,
         modules: modulesJson,
         passingScore: _tpl.passingScore,
         totalScore: _score,
