@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/templates.dart';
+
 /// Dropdown a prueba de crashes:
 class SafeDropdownFormField<T> extends StatelessWidget {
   final T? value;
@@ -82,8 +84,9 @@ class _EvaluationPageState extends State<EvaluationPage> {
   @override
   void initState() {
     super.initState();
-    final t = widget.initialData['tipo_inspeccion'] as String?;
-    _tipo = _tipos.contains(t) ? t : null;
+    final raw = widget.initialData['tipo_inspeccion'] as String?;
+    final normalized = normalizeTemplateCode(raw);
+    _tipo = _tipos.contains(normalized) ? normalized : null;
   }
 
   List<Map<String, dynamic>> _getQuestions(String tipo) {

@@ -6,7 +6,7 @@ class Question {
 }
 
 class TemplateDef {
-  final String code; // 'pequeno', 'grande', ...
+  final String code; // 'comercio_pequeno', 'comercio_grande', ...
   final String name;
   final int passingScore; // puntaje mínimo para “aprobado”
   final List<Question> questions;
@@ -21,7 +21,7 @@ class TemplateDef {
 
 const templates = <TemplateDef>[
   TemplateDef(
-    code: 'pequeno',
+    code: 'comercio_pequeno',
     name: 'Comercio pequeño',
     passingScore: 70,
     questions: [
@@ -33,7 +33,7 @@ const templates = <TemplateDef>[
     ],
   ),
   TemplateDef(
-    code: 'grande',
+    code: 'comercio_grande',
     name: 'Comercio grande',
     passingScore: 80,
     questions: [
@@ -45,7 +45,7 @@ const templates = <TemplateDef>[
     ],
   ),
   TemplateDef(
-    code: 'estacion',
+    code: 'estacion_servicio',
     name: 'Estación de servicio',
     passingScore: 85,
     questions: [
@@ -70,7 +70,26 @@ const templates = <TemplateDef>[
   ),
 ];
 
+String normalizeTemplateCode(String? code) {
+  switch (code) {
+    case 'comercio_pequeno':
+    case 'pequeno':
+      return 'comercio_pequeno';
+    case 'comercio_grande':
+    case 'grande':
+      return 'comercio_grande';
+    case 'estacion_servicio':
+    case 'estacion':
+      return 'estacion_servicio';
+    case 'industria':
+      return 'industria';
+    default:
+      return templates.first.code;
+  }
+}
+
 TemplateDef templateByCode(String code) {
-  return templates.firstWhere((t) => t.code == code, orElse: () => templates.first);
+  final normalized = normalizeTemplateCode(code);
+  return templates.firstWhere((t) => t.code == normalized, orElse: () => templates.first);
 }
 
