@@ -20,14 +20,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   ProviderSubscription<AsyncValue<AppUser?>>? _userSubscription;
 
   @override
-  void initState() {
-    super.initState();
-    _applyUser(ref.read(currentUserProvider).valueOrNull);
-    _userSubscription = ref.listen<AsyncValue<AppUser?>>(currentUserProvider,
-        (previous, next) {
+void initState() {
+  super.initState();
+  _applyUser(ref.read(currentUserProvider).valueOrNull);
+
+  _userSubscription = ref.listenManual<AsyncValue<AppUser?>>(
+    currentUserProvider,
+    (previous, next) {
       next.whenData(_applyUser);
-    });
-  }
+    },
+  );
+}
 
   void _applyUser(AppUser? user) {
     if (!mounted || user == null) return;

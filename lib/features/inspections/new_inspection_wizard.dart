@@ -605,152 +605,167 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
     }
   }
 
-  Widget _buildStepOne() {
-    final dateText = _fechaInspeccion == null
-        ? 'Selecciona fecha'
-        : '${_fechaInspeccion!.year}-${_fechaInspeccion!.month.toString().padLeft(2, '0')}-${_fechaInspeccion!.day.toString().padLeft(2, '0')}';
+  WWidget _buildStepOne() {
+  final dateText = _fechaInspeccion == null
+      ? 'Selecciona fecha'
+      : '${_fechaInspeccion!.year}-${_fechaInspeccion!.month.toString().padLeft(2, '0')}-${_fechaInspeccion!.day.toString().padLeft(2, '0')}';
 
-    return Form(
-      key: _stepOneKey,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          TextFormField(
-            controller: _radicadoCtrl,
-            decoration: const InputDecoration(labelText: '# Radicado'),
-            validator: (value) => value == null || value.trim().isEmpty
-                ? 'Campo requerido'
-                : null,
+  return Form(
+    key: _stepOneKey,
+    child: ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        TextFormField(
+          controller: _radicadoCtrl,
+          decoration: const InputDecoration(labelText: '# Radicado'),
+          validator: (value) =>
+              value == null || value.trim().isEmpty ? 'Campo requerido' : null,
+        ),
+        const SizedBox(height: 12),
+
+        // Fecha
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Fecha de inspección'),
+          subtitle: Text(dateText),
+          trailing: OutlinedButton.icon(
+            onPressed: _pickFecha,
+            icon: const Icon(Icons.date_range),
+            label: const Text('Elegir'),
           ),
-          const SizedBox(height: 12),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Fecha de inspección'),
-            subtitle: Text(dateText),
-            trailing: OutlinedButton.icon(
-              onPressed: _pickFecha,
-              icon: const Icon(Icons.date_range),
-              label: const Text('Elegir'),
-            ),
+        ),
+        const Divider(),
+
+        TextFormField(
+          controller: _nombreComCtrl,
+          decoration: const InputDecoration(labelText: 'Nombre comercial'),
+          validator: (value) =>
+              value == null || value.trim().isEmpty ? 'Campo requerido' : null,
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _representanteCtrl,
+          decoration: const InputDecoration(labelText: 'Representante legal'),
+          validator: (value) =>
+              value == null || value.trim().isEmpty ? 'Campo requerido' : null,
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _direccionCtrl,
+          decoration: const InputDecoration(labelText: 'Dirección (RUT)'),
+          validator: (value) =>
+              value == null || value.trim().isEmpty ? 'Campo requerido' : null,
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _celularCtrl,
+          decoration:
+              const InputDecoration(labelText: 'Celular (10 dígitos)'),
+          keyboardType: TextInputType.phone,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          maxLength: 10,
+          validator: (value) {
+            if (value == null || value.trim().isEmpty) {
+              return 'Campo requerido';
+            }
+            if (value.trim().length != 10) {
+              return 'Debe tener 10 dígitos';
+            }
+            return null;
+          },
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _acompananteCtrl,
+          decoration: const InputDecoration(labelText: 'Acompañante'),
+        ),
+        const SizedBox(height: 12),
+
+        // 🔹 Dropdown tipo inspección (CORREGIDO)
+        DropdownButtonFormField<String>(
+          value: _tipoInspeccion,
+          items: const [
+            DropdownMenuItem<String>(
+                value: 'comercio_pequeno', child: Text('Comercio pequeño')),
+            DropdownMenuItem<String>(
+                value: 'comercio_grande', child: Text('Comercio grande')),
+            DropdownMenuItem<String>(
+                value: 'estacion_servicio', child: Text('Estación de servicio')),
+            DropdownMenuItem<String>(
+                value: 'industria', child: Text('Industria')),
+          ],
+          onChanged: (String? value) {
+            if (value == null) return;
+            setState(() => _tipoInspeccion = value);
+            _applyTemplate(value);
+          },
+          decoration: const InputDecoration(labelText: 'Tipo de inspección'),
+        ),
+        const SizedBox(height: 12),
+
+        // Foto fachada
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text('Foto de fachada'),
+          subtitle: _fotoFachadaUrl == null
+              ? const Text('Obligatoria')
+              : Image.network(
+                  _fotoFachadaUrl!,
+                  height: 140,
+                  fit: BoxFit.cover,
+                ),
+          trailing: OutlinedButton.icon(
+            onPressed: _pickFachada,
+            icon: const Icon(Icons.add_a_photo),
+            label: const Text('Adjuntar'),
           ),
-          const Divider(),
-          TextFormField(
-            controller: _nombreComCtrl,
-            decoration: const InputDecoration(labelText: 'Nombre comercial'),
-            validator: (value) => value == null || value.trim().isEmpty
-                ? 'Campo requerido'
-                : null,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _representanteCtrl,
-            decoration:
-                const InputDecoration(labelText: 'Representante legal'),
-            validator: (value) => value == null || value.trim().isEmpty
-                ? 'Campo requerido'
-                : null,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _direccionCtrl,
-            decoration: const InputDecoration(labelText: 'Dirección (RUT)'),
-            validator: (value) => value == null || value.trim().isEmpty
-                ? 'Campo requerido'
-                : null,
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _celularCtrl,
-            decoration: const InputDecoration(labelText: 'Celular (10 dígitos)'),
-            keyboardType: TextInputType.phone,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            maxLength: 10,
-            validator: (value) {
-              if (value == null || value.trim().isEmpty) {
-                return 'Campo requerido';
-              }
-              if (value.trim().length != 10) {
-                return 'Debe tener 10 dígitos';
-              }
-              return null;
-            },
-          ),
-          const SizedBox(height: 12),
-          TextFormField(
-            controller: _acompananteCtrl,
-            decoration: const InputDecoration(labelText: 'Acompañante'),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            value: _tipoInspeccion,
-            items: const [
-              DropdownMenuItem(
-                  value: 'comercio_pequeno', child: Text('Comercio pequeño')),
-              DropdownMenuItem(
-                  value: 'comercio_grande', child: Text('Comercio grande')),
-              DropdownMenuItem(
-                  value: 'estacion_servicio', child: Text('Estación de servicio')),
-              DropdownMenuItem(value: 'industria', child: Text('Industria')),
-            ],
-            onChanged: (value) {
-              if (value == null) return;
-              _applyTemplate(value);
-            },
-            decoration: const InputDecoration(labelText: 'Tipo de inspección'),
-          ),
-          const SizedBox(height: 12),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            title: const Text('Foto de fachada'),
-            subtitle: _fotoFachadaUrl == null
-                ? const Text('Obligatoria')
-                : Image.network(
-                    _fotoFachadaUrl!,
-                    height: 140,
-                    fit: BoxFit.cover,
-                  ),
-            trailing: OutlinedButton.icon(
-              onPressed: _pickFachada,
-              icon: const Icon(Icons.add_a_photo),
-              label: const Text('Adjuntar'),
-            ),
-          ),
-          const Divider(),
-          DropdownButtonFormField<bool>(
-            value: _subsanadasPrevias,
-            decoration: const InputDecoration(
-                labelText: '¿Se subsanaron observaciones previas?'),
-            items: const [
-              DropdownMenuItem(value: true, child: Text('Sí, subsanadas')),
-              DropdownMenuItem(value: false, child: Text('No se subsanaron')),
-            ],
-            onChanged: (value) => setState(() => _subsanadasPrevias = value),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<bool>(
-            value: _emergenciasUltAnio,
-            decoration: const InputDecoration(
-                labelText: '¿Emergencias en el último año?'),
-            items: const [
-              DropdownMenuItem(value: true, child: Text('Sí hubo emergencias')),
-              DropdownMenuItem(value: false, child: Text('No hubo emergencias')),
-            ],
-            onChanged: (value) => setState(() => _emergenciasUltAnio = value),
-          ),
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: () {
-              if (_validateStepOne()) {
-                _goToStep(1);
-              }
-            },
-            icon: const Icon(Icons.arrow_forward),
-            label: const Text('Continuar con Hoja 2'),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+        const Divider(),
+
+        // 🔹 Dropdown subsanadas previas
+        DropdownButtonFormField<bool>(
+          value: _subsanadasPrevias,
+          decoration: const InputDecoration(
+              labelText: '¿Se subsanaron observaciones previas?'),
+          items: const [
+            DropdownMenuItem<bool>(value: true, child: Text('Sí, subsanadas')),
+            DropdownMenuItem<bool>(value: false, child: Text('No se subsanaron')),
+          ],
+          onChanged: (bool? value) =>
+              setState(() => _subsanadasPrevias = value),
+        ),
+        const SizedBox(height: 12),
+
+        // 🔹 Dropdown emergencias último año
+        DropdownButtonFormField<bool>(
+          value: _emergenciasUltAnio,
+          decoration: const InputDecoration(
+              labelText: '¿Emergencias en el último año?'),
+          items: const [
+            DropdownMenuItem<bool>(
+                value: true, child: Text('Sí hubo emergencias')),
+            DropdownMenuItem<bool>(
+                value: false, child: Text('No hubo emergencias')),
+          ],
+          onChanged: (bool? value) =>
+              setState(() => _emergenciasUltAnio = value),
+        ),
+        const SizedBox(height: 24),
+
+        FilledButton.icon(
+          onPressed: () {
+            if (_validateStepOne()) {
+              _goToStep(1);
+            }
+          },
+          icon: const Icon(Icons.arrow_forward),
+          label: const Text('Continuar con Hoja 2'),
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildStepTwo() {
     return ListView(
