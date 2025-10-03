@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:http/http.dart' as http;
 
 class PdfService {
   /// Genera el PDF completo de la inspección
@@ -20,7 +21,7 @@ class PdfService {
       aprobado: aprobado,
     );
 
-    final fachadaImage = await _loadNetworkImage(inspection.fotoFachadaUrl);
+    final fachadaBytes = await _loadNetworkImage(inspection.fotoFachadaUrl);
     final photoRows = await _buildPhotoRows(inspection.modules);
 
     final pdf = pw.Document();
@@ -101,8 +102,8 @@ class PdfService {
           pw.SizedBox(height: 10),
           pw.Text('Foto fachada:'),
           pw.SizedBox(height: 10),
-          if (fachadaImage != null)
-            pw.Image(fachadaImage, height: 140, fit: pw.BoxFit.cover)
+          if (fachadaBytes != null)
+            pw.Image(pw.MemoryImage(fachadaBytes), height: 140, fit: pw.BoxFit.cover)
           else
             pw.Container(
               height: 120,
@@ -227,22 +228,18 @@ class PdfService {
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(5),
-                        child: () {
-                          final imageProvider = row.imageProvider;
-                          if (imageProvider != null) {
-                            return pw.Image(
-                              imageProvider,
-                              height: 80,
-                              fit: pw.BoxFit.cover,
-                            );
-                          }
-                          return pw.Container(
-                            height: 80,
-                            alignment: pw.Alignment.center,
-                            color: PdfColors.grey300,
-                            child: pw.Text('Sin imagen'),
-                          );
-                        }(),
+                        child: row.imageBytes != null
+                            ? pw.Image(
+                                pw.MemoryImage(row.imageBytes!),
+                                height: 80,
+                                fit: pw.BoxFit.cover,
+                              )
+                            : pw.Container(
+                                height: 80,
+                                alignment: pw.Alignment.center,
+                                color: PdfColors.grey300,
+                                child: pw.Text('Sin imagen'),
+                              ),
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(5),
@@ -265,16 +262,21 @@ class PdfService {
     return pdf.save();
   }
 
-  static Future<pw.ImageProvider?> _loadNetworkImage(String? url) async {
-    if (url == null || url.isEmpty) {
-      return null;
-    }
-    try {
-      return await networkImage(url);
-    } catch (_) {
-      return null;
-    }
+  // 🔥 Aquí la firma corregida
+  static Future<Uint8List?> _loadNetworkImage(String? url) async {
+  if (url == null || url.isEmpty) {
+    return null;
   }
+  try {
+    final response = await http.get(Uri.parse(url));
+    if (response.statusCode == 200) {
+      return response.bodyBytes;
+    }
+    return null;
+  } catch (e) {
+    return null;
+  }
+}
 
   static Future<List<_PhotoRow>> _buildPhotoRows(List<_ModuleData> modules) async {
     final rows = <_PhotoRow>[];
@@ -285,7 +287,7 @@ class PdfService {
           rows.add(
             _PhotoRow(
               hallazgo: item.preguntaTexto,
-              imageProvider: bytes,
+              imageBytes: bytes,
               observacion: foto.observacion,
             ),
           );
@@ -295,6 +297,8 @@ class PdfService {
     return rows;
   }
 }
+
+// ------------------ MODELOS INTERNOS ------------------
 
 class _InspectionData {
   _InspectionData({
@@ -390,7 +394,6 @@ class _InspectionData {
 
 class _Inspector {
   _Inspector({required this.nombre, required this.rango});
-
   final String nombre;
   final String rango;
 }
@@ -424,7 +427,6 @@ class _VisitaAnterior {
 
 class _ModuleData {
   _ModuleData({required this.titulo, required this.items});
-
   final String titulo;
   final List<_ModuleItemData> items;
 
@@ -477,7 +479,6 @@ class _ModuleItemData {
 
 class _FotoData {
   _FotoData({required this.url, required this.observacion});
-
   final String? url;
   final String observacion;
 
@@ -493,12 +494,11 @@ class _FotoData {
 class _PhotoRow {
   _PhotoRow({
     required this.hallazgo,
-    required this.imageProvider,
+    required this.imageBytes,
     required this.observacion,
   });
 
   final String hallazgo;
-  final pw.ImageProvider? imageProvider;
+  final Uint8List? imageBytes;
   final String observacion;
 }
-
