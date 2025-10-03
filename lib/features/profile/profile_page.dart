@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../core/providers.dart';
 import '../../core/models.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -17,21 +17,28 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   final TextEditingController _idCtrl = TextEditingController();
   final TextEditingController _rankCtrl = TextEditingController();
 
+  ProviderSubscription<AsyncValue<AppUser?>>? _userSubscription;
+
   @override
   void initState() {
     super.initState();
-    ref.listen<AsyncValue<AppUser?>>(currentUserProvider, (prev, next) {
-      next.whenData((user) {
-        if (!mounted || user == null) return;
-        _nameCtrl.text = user.fullName;
-        _idCtrl.text = user.nationalId;
-        _rankCtrl.text = user.rank;
-      });
-    }, fireImmediately: true);
+    _applyUser(ref.read(currentUserProvider).valueOrNull);
+    _userSubscription = ref.listen<AsyncValue<AppUser?>>(currentUserProvider,
+        (previous, next) {
+      next.whenData(_applyUser);
+    });
+  }
+
+  void _applyUser(AppUser? user) {
+    if (!mounted || user == null) return;
+    _nameCtrl.text = user.fullName;
+    _idCtrl.text = user.nationalId;
+    _rankCtrl.text = user.rank;
   }
 
   @override
   void dispose() {
+    _userSubscription?.close();
     _nameCtrl.dispose();
     _idCtrl.dispose();
     _rankCtrl.dispose();

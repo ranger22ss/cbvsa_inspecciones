@@ -89,7 +89,7 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
 
     final visita = existing['visita_anterior'];
     if (visita is Map) {
-      final map = Map<String, dynamic>.from(visita as Map);
+      final map = Map<String, dynamic>.from(visita);
       _subsanadasPrevias = map['subsanadas_obs_previas'] as bool?;
       _emergenciasUltAnio = map['emergencias_ultimo_anio'] as bool?;
     }
@@ -141,7 +141,7 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
 
     final resultado = existing['resultado'];
     if (resultado is Map) {
-      final map = Map<String, dynamic>.from(resultado as Map);
+      final map = Map<String, dynamic>.from(resultado);
       _score = (map['puntaje_total'] as num?)?.toInt() ?? 0;
     }
   }
@@ -506,6 +506,30 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
     return modulesJson;
   }
 
+  List<_ModuleSummary> _buildModuleSummaries() {
+    final summaries = <_ModuleSummary>[];
+    for (var moduleIndex = 0;
+        moduleIndex < _template.modules.length;
+        moduleIndex++) {
+      final module = _template.modules[moduleIndex];
+      final items = <_ModuleItemSummary>[];
+      for (final question in module.items) {
+        final key = '${moduleIndex}_${question.id}';
+        final answer = _answers[key] ?? '';
+        final points = question.answerType == AnswerType.yn
+            ? (answer == 'yes' ? question.points : 0)
+            : (question.scoreMap ?? const {'A': 10, 'B': 5, 'C': 0})[answer] ?? 0;
+        items.add(_ModuleItemSummary(
+          question: question.text,
+          answer: answer,
+          points: points,
+        ));
+      }
+      summaries.add(_ModuleSummary(title: module.title, items: items));
+    }
+    return summaries;
+  }
+
   Future<void> _saveInspection() async {
     if (_saving) return;
     setState(() => _saving = true);
@@ -813,7 +837,7 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
 
   Widget _buildStepThree() {
     final aprobado = _score >= _template.passingScore;
-    final modulesJson = _buildModulesPayload();
+    final moduleSummaries = _buildModuleSummaries();
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -841,19 +865,19 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
         Text('Módulos evaluados:',
             style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: 8),
-        for (final module in modulesJson) ...[
-          Text(module['titulo'] as String? ?? '',
+        for (final module in moduleSummaries) ...[
+          Text(module.title,
               style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
-          for (final item in module['items'] as List)
+          for (final item in module.items)
             Padding(
               padding: const EdgeInsets.only(bottom: 6),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(item['pregunta_texto'] as String? ?? ''),
-                  Text('Respuesta: ${item['respuesta']}'),
-                  Text('Puntaje: ${item['puntaje']}'),
+                  Text(item.question),
+                  Text('Respuesta: ${item.answer}'),
+                  Text('Puntaje: ${item.points}'),
                 ],
               ),
             ),
@@ -907,4 +931,19 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
       ),
     );
   }
+}
+
+class _ModuleSummary {
+  const _ModuleSummary({required this.title, required this.items});
+
+  final String title;
+  final List<_ModuleItemSummary> items;
+}
+
+class _ModuleItemSummary {
+  const _ModuleItemSummary({required this.question, required this.answer, required this.points});
+
+  final String question;
+  final String answer;
+  final int points;
 }
