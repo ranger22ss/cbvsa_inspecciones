@@ -20,7 +20,7 @@ class PdfService {
       aprobado: aprobado,
     );
 
-    final fachadaBytes = await _loadNetworkImage(inspection.fotoFachadaUrl);
+    final fachadaImage = await _loadNetworkImage(inspection.fotoFachadaUrl);
     final photoRows = await _buildPhotoRows(inspection.modules);
 
     final pdf = pw.Document();
@@ -101,8 +101,8 @@ class PdfService {
           pw.SizedBox(height: 10),
           pw.Text('Foto fachada:'),
           pw.SizedBox(height: 10),
-          if (fachadaBytes != null)
-            pw.Image(pw.MemoryImage(fachadaBytes as Uint8List), height: 140, fit: pw.BoxFit.cover)
+          if (fachadaImage != null)
+            pw.Image(fachadaImage, height: 140, fit: pw.BoxFit.cover)
           else
             pw.Container(
               height: 120,
@@ -227,9 +227,9 @@ class PdfService {
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(5),
-                        child: row.imageBytes != null
+                        child: row.imageProvider != null
                             ? pw.Image(
-                                pw.MemoryImage(row.imageBytes!),
+                                row.imageProvider!,
                                 height: 80,
                                 fit: pw.BoxFit.cover,
                               )
@@ -349,9 +349,9 @@ class _InspectionData {
 
     String fechaTexto = '';
     if (fecha != null) {
-      final day = fecha!.day.toString().padLeft(2, '0');
-      final month = fecha!.month.toString().padLeft(2, '0');
-      final year = fecha!.year.toString();
+      final day = fecha.day.toString().padLeft(2, '0');
+      final month = fecha.month.toString().padLeft(2, '0');
+      final year = fecha.year.toString();
       fechaTexto = '$day/$month/$year';
     } else if (fechaRaw != null) {
       fechaTexto = fechaRaw.toString();
@@ -489,12 +489,12 @@ class _FotoData {
 class _PhotoRow {
   _PhotoRow({
     required this.hallazgo,
-    required this.imageBytes,
+    required this.imageProvider,
     required this.observacion,
   });
 
   final String hallazgo;
-  final Uint8List? imageBytes;
+  final pw.ImageProvider? imageProvider;
   final String observacion;
 }
 
