@@ -227,18 +227,22 @@ class PdfService {
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(5),
-                        child: row.imageProvider != null
-                            ? pw.Image(
-                                row.imageProvider!,
-                                height: 80,
-                                fit: pw.BoxFit.cover,
-                              )
-                            : pw.Container(
-                                height: 80,
-                                alignment: pw.Alignment.center,
-                                color: PdfColors.grey300,
-                                child: pw.Text('Sin imagen'),
-                              ),
+                        child: () {
+                          final imageProvider = row.imageProvider;
+                          if (imageProvider != null) {
+                            return pw.Image(
+                              imageProvider,
+                              height: 80,
+                              fit: pw.BoxFit.cover,
+                            );
+                          }
+                          return pw.Container(
+                            height: 80,
+                            alignment: pw.Alignment.center,
+                            color: PdfColors.grey300,
+                            child: pw.Text('Sin imagen'),
+                          );
+                        }(),
                       ),
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(5),
@@ -281,7 +285,7 @@ class PdfService {
           rows.add(
             _PhotoRow(
               hallazgo: item.preguntaTexto,
-              imageBytes: bytes,
+              imageProvider: bytes,
               observacion: foto.observacion,
             ),
           );
