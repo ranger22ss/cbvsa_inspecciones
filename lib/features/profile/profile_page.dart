@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import '../../core/providers.dart';
 import '../../core/models.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({super.key});
@@ -13,30 +13,32 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nameCtrl;
-  late final TextEditingController _idCtrl;
-  late final TextEditingController _rankCtrl;
+  final TextEditingController _nameCtrl = TextEditingController();
+  final TextEditingController _idCtrl = TextEditingController();
+  final TextEditingController _rankCtrl = TextEditingController();
+
+  ProviderSubscription<AsyncValue<AppUser?>>? _userSubscription;
 
   @override
   void initState() {
     super.initState();
-    final asyncUser = ref.read(currentUserProvider);
-    asyncUser.whenData((user) {
-      if (mounted && user != null) {
-        _nameCtrl = TextEditingController(text: user.fullName);
-        _idCtrl = TextEditingController(text: user.nationalId);
-        _rankCtrl = TextEditingController(text: user.rank);
-        setState(() {});
-      }
+    _applyUser(ref.read(currentUserProvider).valueOrNull);
+    _userSubscription = ref.listen<AsyncValue<AppUser?>>(currentUserProvider,
+        (previous, next) {
+      next.whenData(_applyUser);
     });
-    // Valores por defecto mientras carga
-    _nameCtrl = TextEditingController(text: '');
-    _idCtrl = TextEditingController(text: '');
-    _rankCtrl = TextEditingController(text: '');
+  }
+
+  void _applyUser(AppUser? user) {
+    if (!mounted || user == null) return;
+    _nameCtrl.text = user.fullName;
+    _idCtrl.text = user.nationalId;
+    _rankCtrl.text = user.rank;
   }
 
   @override
   void dispose() {
+    _userSubscription?.close();
     _nameCtrl.dispose();
     _idCtrl.dispose();
     _rankCtrl.dispose();
@@ -48,20 +50,26 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final supabase = ref.read(supabaseProvider);
     final authUser = supabase.auth.currentUser;
     if (authUser == null) return;
+    try {
+      await supabase.from('profiles').update({
+        'full_name': _nameCtrl.text.trim(),
+        'national_id': _idCtrl.text.trim(),
+        'rank': _rankCtrl.text.trim(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }).eq('id', authUser.id);
 
-    await supabase.from('profiles').update({
-      'full_name': _nameCtrl.text.trim(),
-      'national_id': _idCtrl.text.trim(),
-      'rank': _rankCtrl.text.trim(),
-      'updated_at': DateTime.now().toUtc().toIso8601String(),
-    }).eq('id', authUser.id);
-
-    // refrescar provider
-    ref.invalidate(currentUserProvider);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Perfil actualizado')),
-      );
+      ref.invalidate(currentUserProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Perfil actualizado')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al actualizar perfil: $e')),
+        );
+      }
     }
   }
 

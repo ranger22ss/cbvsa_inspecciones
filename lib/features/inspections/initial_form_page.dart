@@ -1,8 +1,7 @@
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
-import 'evaluation_page.dart'; // Hoja 2
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 // --- Safe dropdown widget (pegado aquí para no tocar más archivos) ---
 class SafeDropdownFormField<T> extends StatelessWidget {
