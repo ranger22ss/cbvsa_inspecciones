@@ -13,26 +13,21 @@ class ProfilePage extends ConsumerStatefulWidget {
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nameCtrl;
-  late final TextEditingController _idCtrl;
-  late final TextEditingController _rankCtrl;
+  final TextEditingController _nameCtrl = TextEditingController();
+  final TextEditingController _idCtrl = TextEditingController();
+  final TextEditingController _rankCtrl = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    final asyncUser = ref.read(currentUserProvider);
-    asyncUser.whenData((user) {
-      if (mounted && user != null) {
-        _nameCtrl = TextEditingController(text: user.fullName);
-        _idCtrl = TextEditingController(text: user.nationalId);
-        _rankCtrl = TextEditingController(text: user.rank);
-        setState(() {});
-      }
-    });
-    // Valores por defecto mientras carga
-    _nameCtrl = TextEditingController(text: '');
-    _idCtrl = TextEditingController(text: '');
-    _rankCtrl = TextEditingController(text: '');
+    ref.listen<AsyncValue<AppUser?>>(currentUserProvider, (prev, next) {
+      next.whenData((user) {
+        if (!mounted || user == null) return;
+        _nameCtrl.text = user.fullName;
+        _idCtrl.text = user.nationalId;
+        _rankCtrl.text = user.rank;
+      });
+    }, fireImmediately: true);
   }
 
   @override
@@ -48,20 +43,26 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final supabase = ref.read(supabaseProvider);
     final authUser = supabase.auth.currentUser;
     if (authUser == null) return;
+    try {
+      await supabase.from('profiles').update({
+        'full_name': _nameCtrl.text.trim(),
+        'national_id': _idCtrl.text.trim(),
+        'rank': _rankCtrl.text.trim(),
+        'updated_at': DateTime.now().toUtc().toIso8601String(),
+      }).eq('id', authUser.id);
 
-    await supabase.from('profiles').update({
-      'full_name': _nameCtrl.text.trim(),
-      'national_id': _idCtrl.text.trim(),
-      'rank': _rankCtrl.text.trim(),
-      'updated_at': DateTime.now().toUtc().toIso8601String(),
-    }).eq('id', authUser.id);
-
-    // refrescar provider
-    ref.invalidate(currentUserProvider);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Perfil actualizado')),
-      );
+      ref.invalidate(currentUserProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Perfil actualizado')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al actualizar perfil: $e')),
+        );
+      }
     }
   }
 

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/providers.dart';
 import '../../core/templates.dart';
-import 'create_inspection_intro_page.dart';  // 👉 Hoja 1
-import 'inspection_detail_page.dart';       // 👉 Nuevo detalle
+import 'inspection_detail_page.dart';
+import 'new_inspection_wizard.dart';
 
 final myInspectionsProvider =
     FutureProvider<List<Map<String, dynamic>>>((ref) async {
@@ -70,12 +70,15 @@ class InspectionsListPage extends ConsumerWidget {
                   ],
                 ),
                 onTap: () async {
-                  await Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) =>
-                        InspectionDetailPage(inspection: r), // 👈 abre detalle
-                  ));
-                  // refrescar al volver
-                  ref.invalidate(myInspectionsProvider);
+                  final updated = await Navigator.of(context).push<bool>(
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          InspectionDetailPage(inspection: r),
+                    ),
+                  );
+                  if (updated == true) {
+                    ref.invalidate(myInspectionsProvider);
+                  }
                 },
               );
             },
@@ -86,10 +89,14 @@ class InspectionsListPage extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          await Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => const CreateInspectionIntroPage(), // 👈 Hoja 1
-          ));
-          ref.invalidate(myInspectionsProvider);
+          final created = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => const NewInspectionWizard(),
+            ),
+          );
+          if (created == true) {
+            ref.invalidate(myInspectionsProvider);
+          }
         },
         label: const Text('Nueva'),
         icon: const Icon(Icons.add),

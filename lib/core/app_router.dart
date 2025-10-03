@@ -9,7 +9,6 @@ import '../features/auth/login_page.dart';
 import '../features/home/home_page.dart';
 import '../features/profile/profile_page.dart';
 import '../features/inspections/inspections_list_page.dart';
-import '../features/inspections/create_intro_page.dart';
 import '../features/inspections/new_inspection_wizard.dart';
 
 // --- Utilidad para refrescar GoRouter cuando cambia el auth ---
@@ -63,10 +62,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/inspections',
         builder: (context, state) => const InspectionsListPage(),
       ),
-      // NUEVA RUTA: Hoja 1 (formulario inicial)
+      // Nueva inspección: siempre inicia en Hoja 1 del wizard
       GoRoute(
         path: '/inspections/start',
-        builder: (context, state) => const CreateInspectionIntroPage(),
+        builder: (context, state) => const NewInspectionWizard(),
       ),
       // (opcional) Crear directo con wizard vacío
       GoRoute(
@@ -77,9 +76,14 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/inspections/:id/edit',
         builder: (context, state) {
-          final map = (state.extra ?? {}) as Map<String, dynamic>;
+          final extra = state.extra;
+          Map<String, dynamic>? existing;
+          if (extra is Map<String, dynamic> && extra['existing'] is Map) {
+            existing = Map<String, dynamic>.from(
+                extra['existing'] as Map<dynamic, dynamic>);
+          }
           return NewInspectionWizard(
-            existing: map['existing'] as Map<String, dynamic>?,
+            existing: existing,
             inspectionId: state.pathParameters['id'],
           );
         },
