@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../core/providers.dart';
-import '../../core/templates.dart';            // 👈 IMPORTA PLANTILLAS
-import 'new_inspection_wizard.dart';
-import 'inspection_detail_page.dart';         // 👈 IMPORTAMOS EL DETALLE
+import '../../core/templates.dart';
+import 'create_inspection_intro_page.dart';  // 👉 Hoja 1
+import 'inspection_detail_page.dart';       // 👉 Nuevo detalle
 
-// Provider para traer las inspecciones del usuario actual
-final myInspectionsProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
+final myInspectionsProvider =
+    FutureProvider<List<Map<String, dynamic>>>((ref) async {
   final supabase = ref.watch(supabaseProvider);
   final user = supabase.auth.currentUser;
   if (user == null) return [];
@@ -25,7 +24,7 @@ class InspectionsListPage extends ConsumerWidget {
   bool _isApproved(Map<String, dynamic> row) {
     try {
       final template = (row['tipo_inspeccion'] ?? '').toString();
-      final score = (row['score'] ?? 0) as int;
+      final score = (row['resultado']?['puntaje_total'] ?? 0) as int;
       final t = templates.firstWhere((e) => e.code == template);
       return score >= t.passingScore;
     } catch (_) {
@@ -50,34 +49,32 @@ class InspectionsListPage extends ConsumerWidget {
             itemBuilder: (context, i) {
               final r = rows[i];
               final name = r['nombre_comercial'] ?? '—';
-              final score = r['score'] ?? 0;
+              final radicado = r['radicado'] ?? '—';
+              final score = (r['resultado']?['puntaje_total'] ?? 0) as int;
               final template = r['tipo_inspeccion'] ?? '';
               final date = (r['fecha_inspeccion'] ?? '').toString();
               final ok = _isApproved(r);
 
               return ListTile(
                 title: Text(name),
-                subtitle: Text('$template • $date'),
+                subtitle: Text('Radicado: $radicado • $template • $date'),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text('$score pts'),
-                    Text(
-                      ok ? 'APROBADO' : 'NO APROBADO',
-                      style: TextStyle(
-                        color: ok ? Colors.green : Colors.red,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    Text(ok ? 'APROBADO' : 'NO APROBADO',
+                        style: TextStyle(
+                          color: ok ? Colors.green : Colors.red,
+                          fontWeight: FontWeight.w600,
+                        )),
                   ],
                 ),
                 onTap: () async {
-                  // 👉 Ahora abrimos la pantalla de detalle correctamente
                   await Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => InspectionDetailPage(row: r),
+                    builder: (_) =>
+                        InspectionDetailPage(inspection: r), // 👈 abre detalle
                   ));
                   // refrescar al volver
-                  // ignore: use_build_context_synchronously
                   ref.invalidate(myInspectionsProvider);
                 },
               );
@@ -90,10 +87,8 @@ class InspectionsListPage extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           await Navigator.of(context).push(MaterialPageRoute(
-            builder: (_) => const NewInspectionWizard(),
+            builder: (_) => const CreateInspectionIntroPage(), // 👈 Hoja 1
           ));
-          // refrescar al volver
-          // ignore: use_build_context_synchronously
           ref.invalidate(myInspectionsProvider);
         },
         label: const Text('Nueva'),
@@ -102,3 +97,6 @@ class InspectionsListPage extends ConsumerWidget {
     );
   }
 }
+
+
+

@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
 
 import '../../core/pdf_service.dart';
-import '../../core/providers.dart'; // <- aquí está supabaseProvider
+import '../../core/providers.dart'; // <- supabaseProvider
 
 class SummaryConclusionPage extends ConsumerStatefulWidget {
-  final Map<String, dynamic> baseData;                 // viene de Hoja 1
-  final String tipoInspeccion;                         // seleccionado en Hoja 1
-  final List<Map<String, dynamic>> modules;            // armado en Hoja 2
+  final Map<String, dynamic> baseData;                 // Hoja 1
+  final String tipoInspeccion;                         // tipo seleccionado
+  final List<Map<String, dynamic>> modules;            // módulos armados en Hoja 2
   final int passingScore;
   final int totalScore;
   final bool aprobado;
@@ -24,7 +24,8 @@ class SummaryConclusionPage extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<SummaryConclusionPage> createState() => _SummaryConclusionPageState();
+  ConsumerState<SummaryConclusionPage> createState() =>
+      _SummaryConclusionPageState();
 }
 
 class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
@@ -35,23 +36,26 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
     try {
       final supabase = ref.read(supabaseProvider);
       final user = supabase.auth.currentUser!;
+      final aprobado = widget.aprobado;
 
+      // Payload final con todos los datos
       final payload = {
-        'inspector_id'      : user.id,
-        'radicado'          : widget.baseData['radicado'],
-        'fecha_inspeccion'  : widget.baseData['fecha_inspeccion'],
-        'nombre_comercial'  : widget.baseData['nombre_comercial'],
+        'inspector_id': user.id,
+        'radicado': widget.baseData['radicado'],
+        'fecha_inspeccion': widget.baseData['fecha_inspeccion'],
+        'nombre_comercial': widget.baseData['nombre_comercial'],
         'representante_legal': widget.baseData['representante_legal'],
-        'direccion_rut'     : widget.baseData['direccion_rut'],
-        'celular_rut'       : widget.baseData['celular_rut'],
-        'acompanante'       : widget.baseData['acompanante'] ?? '',
-        'foto_fachada_url'  : widget.baseData['foto_fachada_url'],
-        'visita_anterior'   : widget.baseData['visita_anterior'],  // jsonb
-        'tipo_inspeccion'   : widget.tipoInspeccion,
-        'modules'           : widget.modules,                      // jsonb con preguntas, respuestas y fotos
-        'resultado'         : {
-          'puntaje_total': widget.totalScore,
-          'aprobado'     : widget.aprobado,
+        'direccion_rut': widget.baseData['direccion_rut'],
+        'celular_rut': widget.baseData['celular_rut'],
+        'acompanante': widget.baseData['acompanante'] ?? '',
+        'foto_fachada_url': widget.baseData['foto_fachada_url'],
+        'visita_anterior': widget.baseData['visita_anterior'], // jsonb
+        'tipo_inspeccion': widget.tipoInspeccion,
+        'modules': widget.modules, // jsonb
+        'resultado': {
+          'puntaje_total': widget.totalScore,   // 👈 ahora sí el real
+          'aprobado': aprobado,
+          'puntaje_minimo': widget.passingScore,
         },
       };
 
@@ -83,8 +87,9 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
       await Printing.sharePdf(bytes: bytes, filename: 'informe_inspeccion.pdf');
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error generando PDF: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error generando PDF: $e')),
+      );
     }
   }
 
@@ -118,70 +123,16 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Text('Puntaje total: ${widget.totalScore} / Mínimo: ${widget.passingScore}',
-              style: Theme.of(context).textTheme.titleLarge),
+          Text(
+            'Puntaje total: ${widget.totalScore} / Mínimo: ${widget.passingScore}',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
           const SizedBox(height: 8),
           Chip(
             label: Text(widget.aprobado ? 'APROBADO' : 'NO APROBADO'),
             backgroundColor: widget.aprobado ? Colors.green[100] : Colors.red[100],
           ),
           const SizedBox(height: 16),
-
-          // 🔥 Detalle de módulos
-          Text('Detalle de la evaluación', style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 8),
-          for (final mod in widget.modules) ...[
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(mod['titulo'] ?? 'Módulo',
-                        style: Theme.of(context).textTheme.titleMedium),
-                    const Divider(),
-                    for (final item in (mod['items'] as List)) ...[
-                      Text(item['pregunta_texto'] ?? '',
-                          style: const TextStyle(fontWeight: FontWeight.w600)),
-                      Text('Respuesta: ${item['respuesta']} — Puntaje: ${item['puntaje']}'),
-                      if ((item['fotos'] as List).isNotEmpty) ...[
-                        const SizedBox(height: 6),
-                        Wrap(
-                          spacing: 6,
-                          runSpacing: 6,
-                          children: [
-                            for (final foto in (item['fotos'] as List))
-                              Column(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Image.network(
-                                    foto['url'],
-                                    height: 80,
-                                    width: 80,
-                                    fit: BoxFit.cover,
-                                  ),
-                                  if (foto['observacion'] != null)
-                                    SizedBox(
-                                        width: 80,
-                                        child: Text(
-                                          foto['observacion'],
-                                          textAlign: TextAlign.center,
-                                          style: const TextStyle(fontSize: 10),
-                                        )),
-                                ],
-                              )
-                          ],
-                        ),
-                      ],
-                      const Divider(),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ],
-          const SizedBox(height: 16),
-
           Text('Conclusión', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Text(_conclusionTexto(widget.aprobado, nombre, direccion)),
@@ -199,7 +150,10 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
                   onPressed: _saving ? null : _guardarInspeccion,
                   icon: _saving
                       ? const SizedBox(
-                          width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Icon(Icons.save),
                   label: Text(_saving ? 'Guardando...' : 'Guardar inspección'),
                 ),
@@ -219,3 +173,6 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
     );
   }
 }
+
+
+
