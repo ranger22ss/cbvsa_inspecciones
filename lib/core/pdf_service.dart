@@ -277,11 +277,11 @@ class PdfService {
     for (final module in modules) {
       for (final item in module.items) {
         for (final foto in item.fotos) {
-          final provider = await _loadNetworkImage(foto.url);
+          final bytes = await _loadNetworkImage(foto.url);
           rows.add(
             _PhotoRow(
               hallazgo: item.preguntaTexto,
-              imageProvider: provider,
+              imageBytes: bytes,
               observacion: foto.observacion,
             ),
           );
