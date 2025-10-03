@@ -74,7 +74,7 @@ class InspectionsListPage extends ConsumerWidget {
                 onTap: () async {
                   // 👉 Ahora abrimos la pantalla de detalle correctamente
                   await Navigator.of(context).push(MaterialPageRoute(
-                    builder: (_) => InspectionDetailPage(inspection: r, inspectionId: '',),
+                    builder: (_) => InspectionDetailPage(row: r),
                   ));
                   // refrescar al volver
                   // ignore: use_build_context_synchronously
