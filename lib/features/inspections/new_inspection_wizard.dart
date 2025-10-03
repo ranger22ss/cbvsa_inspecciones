@@ -204,9 +204,10 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
   }
 
   Future<void> _pickFachada() async {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
     if (kIsWeb) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('La carga de imágenes no está soportada en web.')),
       );
       return;
@@ -244,10 +245,12 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
     final supabase = ref.read(supabaseProvider);
     final user = supabase.auth.currentUser;
     if (user == null) return;
-    final storage = StorageService(supabase);
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
+    final messenger = ScaffoldMessenger.of(context);
+    final storage = StorageService(supabase);
+
+    messenger.showSnackBar(
       const SnackBar(content: Text('Subiendo foto de fachada...')),
     );
 
@@ -259,12 +262,12 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
       );
       if (!mounted) return;
       setState(() => _fotoFachadaUrl = url);
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('Foto de fachada subida ✔')),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text('Error subiendo fachada: $e')),
       );
     }
@@ -295,9 +298,9 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
       return DropdownButtonFormField<String>(
         value: _answers[key],
         items: const [
-          DropdownMenuItem(value: 'yes', child: Text('Sí / Cumple')),
-          DropdownMenuItem(value: 'no', child: Text('No cumple')),
-          DropdownMenuItem(value: 'na', child: Text('No aplica')),
+          DropdownMenuItem<String>(value: 'yes', child: Text('Sí / Cumple')),
+          DropdownMenuItem<String>(value: 'no', child: Text('No cumple')),
+          DropdownMenuItem<String>(value: 'na', child: Text('No aplica')),
         ],
         onChanged: (value) {
           setState(() => _answers[key] = value ?? 'no');
@@ -310,9 +313,9 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
     return DropdownButtonFormField<String>(
       value: _answers[key],
       items: const [
-        DropdownMenuItem(value: 'A', child: Text('A')),
-        DropdownMenuItem(value: 'B', child: Text('B')),
-        DropdownMenuItem(value: 'C', child: Text('C')),
+        DropdownMenuItem<String>(value: 'A', child: Text('A')),
+        DropdownMenuItem<String>(value: 'B', child: Text('B')),
+        DropdownMenuItem<String>(value: 'C', child: Text('C')),
       ],
       onChanged: (value) {
         setState(() => _answers[key] = value ?? 'C');
@@ -323,9 +326,10 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
   }
 
   Future<void> _addPhoto(String key) async {
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
     if (kIsWeb) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('La captura de fotos no está soportada en web.')),
       );
       return;
@@ -363,7 +367,7 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
     final storage = StorageService(supabase);
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
+    messenger.showSnackBar(
       const SnackBar(content: Text('Subiendo evidencia...')),
     );
 
@@ -376,12 +380,12 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
       final list = List<Map<String, String>>.from(_photos[key] ?? []);
       list.add({'url': url, 'observacion': ''});
       setState(() => _photos[key] = list);
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('Foto subida ✔')),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text('Error al subir foto: $e')),
       );
     }
@@ -532,6 +536,10 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
 
   Future<void> _saveInspection() async {
     if (_saving) return;
+    if (!mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+
     setState(() => _saving = true);
     try {
       final supabase = ref.read(supabaseProvider);
@@ -546,7 +554,7 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
           .eq('id', user.id)
           .maybeSingle();
 
-      final inspectorJson = {
+      final inspectorJson = <String, dynamic>{
         'uid': user.id,
         'nombre': inspectorProfile?['full_name'] ?? user.email,
         'rango': inspectorProfile?['rank'] ?? '',
@@ -556,7 +564,7 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
       final modulesJson = _buildModulesPayload();
       final aprobado = _score >= _template.passingScore;
 
-      final payload = {
+      final payload = <String, dynamic>{
         'inspector_id': user.id,
         'radicado': _radicadoCtrl.text.trim(),
         'fecha_inspeccion': _fechaInspeccion!.toIso8601String(),
@@ -566,13 +574,13 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
         'celular_rut': _celularCtrl.text.trim(),
         'acompanante': _acompananteCtrl.text.trim(),
         'foto_fachada_url': _fotoFachadaUrl,
-        'visita_anterior': {
+        'visita_anterior': <String, dynamic>{
           'subsanadas_obs_previas': _subsanadasPrevias,
           'emergencias_ultimo_anio': _emergenciasUltAnio,
         },
         'tipo_inspeccion': _tipoInspeccion,
         'modules': modulesJson,
-        'resultado': {
+        'resultado': <String, dynamic>{
           'puntaje_total': _score,
           'aprobado': aprobado,
           'puntaje_minimo': _template.passingScore,
@@ -591,13 +599,13 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Inspección guardada correctamente')), 
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Inspección guardada correctamente')),
       );
-      Navigator.of(context).pop(true);
+      navigator.pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         SnackBar(content: Text('Error al guardar: $e')),
       );
     } finally {
@@ -605,166 +613,166 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
     }
   }
 
-  WWidget _buildStepOne() {
-  final dateText = _fechaInspeccion == null
-      ? 'Selecciona fecha'
-      : '${_fechaInspeccion!.year}-${_fechaInspeccion!.month.toString().padLeft(2, '0')}-${_fechaInspeccion!.day.toString().padLeft(2, '0')}';
+  Widget _buildStepOne() {
+    final dateText = _fechaInspeccion == null
+        ? 'Selecciona fecha'
+        : '${_fechaInspeccion!.year}-${_fechaInspeccion!.month.toString().padLeft(2, '0')}-${_fechaInspeccion!.day.toString().padLeft(2, '0')}';
 
-  return Form(
-    key: _stepOneKey,
-    child: ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        TextFormField(
-          controller: _radicadoCtrl,
-          decoration: const InputDecoration(labelText: '# Radicado'),
-          validator: (value) =>
-              value == null || value.trim().isEmpty ? 'Campo requerido' : null,
-        ),
-        const SizedBox(height: 12),
-
-        // Fecha
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Fecha de inspección'),
-          subtitle: Text(dateText),
-          trailing: OutlinedButton.icon(
-            onPressed: _pickFecha,
-            icon: const Icon(Icons.date_range),
-            label: const Text('Elegir'),
+    return Form(
+      key: _stepOneKey,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          TextFormField(
+            controller: _radicadoCtrl,
+            decoration: const InputDecoration(labelText: '# Radicado'),
+            validator: (value) =>
+                value == null || value.trim().isEmpty ? 'Campo requerido' : null,
           ),
-        ),
-        const Divider(),
+          const SizedBox(height: 12),
 
-        TextFormField(
-          controller: _nombreComCtrl,
-          decoration: const InputDecoration(labelText: 'Nombre comercial'),
-          validator: (value) =>
-              value == null || value.trim().isEmpty ? 'Campo requerido' : null,
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _representanteCtrl,
-          decoration: const InputDecoration(labelText: 'Representante legal'),
-          validator: (value) =>
-              value == null || value.trim().isEmpty ? 'Campo requerido' : null,
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _direccionCtrl,
-          decoration: const InputDecoration(labelText: 'Dirección (RUT)'),
-          validator: (value) =>
-              value == null || value.trim().isEmpty ? 'Campo requerido' : null,
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _celularCtrl,
-          decoration:
-              const InputDecoration(labelText: 'Celular (10 dígitos)'),
-          keyboardType: TextInputType.phone,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          maxLength: 10,
-          validator: (value) {
-            if (value == null || value.trim().isEmpty) {
-              return 'Campo requerido';
-            }
-            if (value.trim().length != 10) {
-              return 'Debe tener 10 dígitos';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _acompananteCtrl,
-          decoration: const InputDecoration(labelText: 'Acompañante'),
-        ),
-        const SizedBox(height: 12),
-
-        // 🔹 Dropdown tipo inspección (CORREGIDO)
-        DropdownButtonFormField<String>(
-          value: _tipoInspeccion,
-          items: const [
-            DropdownMenuItem<String>(
-                value: 'comercio_pequeno', child: Text('Comercio pequeño')),
-            DropdownMenuItem<String>(
-                value: 'comercio_grande', child: Text('Comercio grande')),
-            DropdownMenuItem<String>(
-                value: 'estacion_servicio', child: Text('Estación de servicio')),
-            DropdownMenuItem<String>(
-                value: 'industria', child: Text('Industria')),
-          ],
-          onChanged: (String? value) {
-            if (value == null) return;
-            setState(() => _tipoInspeccion = value);
-            _applyTemplate(value);
-          },
-          decoration: const InputDecoration(labelText: 'Tipo de inspección'),
-        ),
-        const SizedBox(height: 12),
-
-        // Foto fachada
-        ListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text('Foto de fachada'),
-          subtitle: _fotoFachadaUrl == null
-              ? const Text('Obligatoria')
-              : Image.network(
-                  _fotoFachadaUrl!,
-                  height: 140,
-                  fit: BoxFit.cover,
-                ),
-          trailing: OutlinedButton.icon(
-            onPressed: _pickFachada,
-            icon: const Icon(Icons.add_a_photo),
-            label: const Text('Adjuntar'),
+          // Fecha
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Fecha de inspección'),
+            subtitle: Text(dateText),
+            trailing: OutlinedButton.icon(
+              onPressed: _pickFecha,
+              icon: const Icon(Icons.date_range),
+              label: const Text('Elegir'),
+            ),
           ),
-        ),
-        const Divider(),
+          const Divider(),
 
-        // 🔹 Dropdown subsanadas previas
-        DropdownButtonFormField<bool>(
-          value: _subsanadasPrevias,
-          decoration: const InputDecoration(
-              labelText: '¿Se subsanaron observaciones previas?'),
-          items: const [
-            DropdownMenuItem<bool>(value: true, child: Text('Sí, subsanadas')),
-            DropdownMenuItem<bool>(value: false, child: Text('No se subsanaron')),
-          ],
-          onChanged: (bool? value) =>
-              setState(() => _subsanadasPrevias = value),
-        ),
-        const SizedBox(height: 12),
+          TextFormField(
+            controller: _nombreComCtrl,
+            decoration: const InputDecoration(labelText: 'Nombre comercial'),
+            validator: (value) =>
+                value == null || value.trim().isEmpty ? 'Campo requerido' : null,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _representanteCtrl,
+            decoration: const InputDecoration(labelText: 'Representante legal'),
+            validator: (value) =>
+                value == null || value.trim().isEmpty ? 'Campo requerido' : null,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _direccionCtrl,
+            decoration: const InputDecoration(labelText: 'Dirección (RUT)'),
+            validator: (value) =>
+                value == null || value.trim().isEmpty ? 'Campo requerido' : null,
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _celularCtrl,
+            decoration:
+                const InputDecoration(labelText: 'Celular (10 dígitos)'),
+            keyboardType: TextInputType.phone,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            maxLength: 10,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Campo requerido';
+              }
+              if (value.trim().length != 10) {
+                return 'Debe tener 10 dígitos';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _acompananteCtrl,
+            decoration: const InputDecoration(labelText: 'Acompañante'),
+          ),
+          const SizedBox(height: 12),
 
-        // 🔹 Dropdown emergencias último año
-        DropdownButtonFormField<bool>(
-          value: _emergenciasUltAnio,
-          decoration: const InputDecoration(
-              labelText: '¿Emergencias en el último año?'),
-          items: const [
-            DropdownMenuItem<bool>(
-                value: true, child: Text('Sí hubo emergencias')),
-            DropdownMenuItem<bool>(
-                value: false, child: Text('No hubo emergencias')),
-          ],
-          onChanged: (bool? value) =>
-              setState(() => _emergenciasUltAnio = value),
-        ),
-        const SizedBox(height: 24),
+          // 🔹 Dropdown tipo inspección (CORREGIDO)
+          DropdownButtonFormField<String>(
+            value: _tipoInspeccion,
+            items: const [
+              DropdownMenuItem<String>(
+                  value: 'comercio_pequeno', child: Text('Comercio pequeño')),
+              DropdownMenuItem<String>(
+                  value: 'comercio_grande', child: Text('Comercio grande')),
+              DropdownMenuItem<String>(
+                  value: 'estacion_servicio', child: Text('Estación de servicio')),
+              DropdownMenuItem<String>(
+                  value: 'industria', child: Text('Industria')),
+            ],
+            onChanged: (String? value) {
+              if (value == null) return;
+              setState(() => _tipoInspeccion = value);
+              _applyTemplate(value);
+            },
+            decoration: const InputDecoration(labelText: 'Tipo de inspección'),
+          ),
+          const SizedBox(height: 12),
 
-        FilledButton.icon(
-          onPressed: () {
-            if (_validateStepOne()) {
-              _goToStep(1);
-            }
-          },
-          icon: const Icon(Icons.arrow_forward),
-          label: const Text('Continuar con Hoja 2'),
-        ),
-      ],
-    ),
-  );
-}
+          // Foto fachada
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Foto de fachada'),
+            subtitle: _fotoFachadaUrl == null
+                ? const Text('Obligatoria')
+                : Image.network(
+                    _fotoFachadaUrl!,
+                    height: 140,
+                    fit: BoxFit.cover,
+                  ),
+            trailing: OutlinedButton.icon(
+              onPressed: _pickFachada,
+              icon: const Icon(Icons.add_a_photo),
+              label: const Text('Adjuntar'),
+            ),
+          ),
+          const Divider(),
+
+          // 🔹 Dropdown subsanadas previas
+          DropdownButtonFormField<bool>(
+            value: _subsanadasPrevias,
+            decoration: const InputDecoration(
+                labelText: '¿Se subsanaron observaciones previas?'),
+            items: const [
+              DropdownMenuItem<bool>(value: true, child: Text('Sí, subsanadas')),
+              DropdownMenuItem<bool>(value: false, child: Text('No se subsanaron')),
+            ],
+            onChanged: (bool? value) =>
+                setState(() => _subsanadasPrevias = value),
+          ),
+          const SizedBox(height: 12),
+
+          // 🔹 Dropdown emergencias último año
+          DropdownButtonFormField<bool>(
+            value: _emergenciasUltAnio,
+            decoration: const InputDecoration(
+                labelText: '¿Emergencias en el último año?'),
+            items: const [
+              DropdownMenuItem<bool>(
+                  value: true, child: Text('Sí hubo emergencias')),
+              DropdownMenuItem<bool>(
+                  value: false, child: Text('No hubo emergencias')),
+            ],
+            onChanged: (bool? value) =>
+                setState(() => _emergenciasUltAnio = value),
+          ),
+          const SizedBox(height: 24),
+
+          FilledButton.icon(
+            onPressed: () {
+              if (_validateStepOne()) {
+                _goToStep(1);
+              }
+            },
+            icon: const Icon(Icons.arrow_forward),
+            label: const Text('Continuar con Hoja 2'),
+          ),
+        ],
+      ),
+    );
+  }
 
 
   Widget _buildStepTwo() {
