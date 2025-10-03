@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import '../../core/providers.dart';
+import 'package:printing/printing.dart';
+
 import '../../core/pdf_service.dart';
 import 'new_inspection_wizard.dart';
 
@@ -30,13 +30,18 @@ class InspectionDetailPage extends ConsumerWidget {
           IconButton(
             tooltip: 'Editar',
             icon: const Icon(Icons.edit),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                builder: (_) => NewInspectionWizard(
-                  existing: inspection,
-                  inspectionId: inspection['id'] as String,
+            onPressed: () async {
+              final result = await Navigator.of(context).push<bool>(
+                MaterialPageRoute(
+                  builder: (_) => NewInspectionWizard(
+                    existing: Map<String, dynamic>.from(inspection),
+                    inspectionId: inspection['id'] as String?,
+                  ),
                 ),
-              ));
+              );
+              if (result == true && context.mounted) {
+                Navigator.of(context).pop(true);
+              }
             },
           ),
           IconButton(
