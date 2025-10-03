@@ -102,7 +102,7 @@ class PdfService {
           pw.Text('Foto fachada:'),
           pw.SizedBox(height: 10),
           if (fachadaBytes != null)
-            pw.Image(pw.MemoryImage(fachadaBytes), height: 140, fit: pw.BoxFit.cover)
+            pw.Image(pw.MemoryImage(fachadaBytes as Uint8List), height: 140, fit: pw.BoxFit.cover)
           else
             pw.Container(
               height: 120,
@@ -261,7 +261,7 @@ class PdfService {
     return pdf.save();
   }
 
-  static Future<Uint8List?> _loadNetworkImage(String? url) async {
+  static Future<pw.ImageProvider?> _loadNetworkImage(String? url) async {
     if (url == null || url.isEmpty) {
       return null;
     }
