@@ -294,10 +294,10 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
     if (question.answerType == AnswerType.yn) {
       return DropdownButtonFormField<String>(
         value: _answers[key],
-        items: const [
-          DropdownMenuItem(value: 'yes', child: Text('Sí / Cumple')),
-          DropdownMenuItem(value: 'no', child: Text('No cumple')),
-          DropdownMenuItem(value: 'na', child: Text('No aplica')),
+        items: [
+          const DropdownMenuItem(value: 'yes', child: Text('Sí / Cumple')),
+          const DropdownMenuItem(value: 'no', child: Text('No cumple')),
+          const DropdownMenuItem(value: 'na', child: Text('No aplica')),
         ],
         onChanged: (value) {
           setState(() => _answers[key] = value ?? 'no');
@@ -309,10 +309,10 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
 
     return DropdownButtonFormField<String>(
       value: _answers[key],
-      items: const [
-        DropdownMenuItem(value: 'A', child: Text('A')),
-        DropdownMenuItem(value: 'B', child: Text('B')),
-        DropdownMenuItem(value: 'C', child: Text('C')),
+      items: [
+        const DropdownMenuItem(value: 'A', child: Text('A')),
+        const DropdownMenuItem(value: 'B', child: Text('B')),
+        const DropdownMenuItem(value: 'C', child: Text('C')),
       ],
       onChanged: (value) {
         setState(() => _answers[key] = value ?? 'C');
@@ -684,14 +684,14 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
         // 🔹 Dropdown tipo inspección (CORREGIDO)
         DropdownButtonFormField<String>(
           value: _tipoInspeccion,
-          items: const [
-            DropdownMenuItem<String>(
+          items: [
+            const DropdownMenuItem<String>(
                 value: 'comercio_pequeno', child: Text('Comercio pequeño')),
-            DropdownMenuItem<String>(
+            const DropdownMenuItem<String>(
                 value: 'comercio_grande', child: Text('Comercio grande')),
-            DropdownMenuItem<String>(
+            const DropdownMenuItem<String>(
                 value: 'estacion_servicio', child: Text('Estación de servicio')),
-            DropdownMenuItem<String>(
+            const DropdownMenuItem<String>(
                 value: 'industria', child: Text('Industria')),
           ],
           onChanged: (String? value) {
@@ -727,9 +727,11 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
           value: _subsanadasPrevias,
           decoration: const InputDecoration(
               labelText: '¿Se subsanaron observaciones previas?'),
-          items: const [
-            DropdownMenuItem<bool>(value: true, child: Text('Sí, subsanadas')),
-            DropdownMenuItem<bool>(value: false, child: Text('No se subsanaron')),
+          items: [
+            const DropdownMenuItem<bool>(
+                value: true, child: Text('Sí, subsanadas')),
+            const DropdownMenuItem<bool>(
+                value: false, child: Text('No se subsanaron')),
           ],
           onChanged: (bool? value) =>
               setState(() => _subsanadasPrevias = value),
@@ -741,10 +743,10 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
           value: _emergenciasUltAnio,
           decoration: const InputDecoration(
               labelText: '¿Emergencias en el último año?'),
-          items: const [
-            DropdownMenuItem<bool>(
+          items: [
+            const DropdownMenuItem<bool>(
                 value: true, child: Text('Sí hubo emergencias')),
-            DropdownMenuItem<bool>(
+            const DropdownMenuItem<bool>(
                 value: false, child: Text('No hubo emergencias')),
           ],
           onChanged: (bool? value) =>

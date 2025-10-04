@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 import 'package:http/http.dart' as http;
 
 class PdfService {
@@ -736,7 +735,7 @@ class _VisitaAnterior {
   final bool emergenciasUltimoAnio;
 
   factory _VisitaAnterior.fromMap(Map<String, dynamic> map) {
-    bool _toBool(dynamic value) {
+    bool toBool(dynamic value) {
       if (value is bool) return value;
       if (value is num) return value != 0;
       if (value is String) {
@@ -747,8 +746,8 @@ class _VisitaAnterior {
     }
 
     return _VisitaAnterior(
-      subsanadasObsPrevias: _toBool(map['subsanadas_obs_previas']),
-      emergenciasUltimoAnio: _toBool(map['emergencias_ultimo_anio']),
+      subsanadasObsPrevias: toBool(map['subsanadas_obs_previas']),
+      emergenciasUltimoAnio: toBool(map['emergencias_ultimo_anio']),
     );
   }
 }

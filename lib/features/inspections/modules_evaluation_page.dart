@@ -114,10 +114,10 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
       final val = _answers[key] ?? 'no';
       return DropdownButtonFormField<String>(
         value: val,
-        items: const [
-          DropdownMenuItem(value: 'yes', child: Text('Sí / Cumple')),
-          DropdownMenuItem(value: 'no', child: Text('No cumple')),
-          DropdownMenuItem(value: 'na', child: Text('No aplica')),
+        items: [
+          const DropdownMenuItem(value: 'yes', child: Text('Sí / Cumple')),
+          const DropdownMenuItem(value: 'no', child: Text('No cumple')),
+          const DropdownMenuItem(value: 'na', child: Text('No aplica')),
         ],
         onChanged: (v) {
           _answers[key] = v ?? 'no';
@@ -129,10 +129,10 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
       final val = _answers[key] ?? 'C';
       return DropdownButtonFormField<String>(
         value: val,
-        items: const [
-          DropdownMenuItem(value: 'A', child: Text('A')),
-          DropdownMenuItem(value: 'B', child: Text('B')),
-          DropdownMenuItem(value: 'C', child: Text('C')),
+        items: [
+          const DropdownMenuItem(value: 'A', child: Text('A')),
+          const DropdownMenuItem(value: 'B', child: Text('B')),
+          const DropdownMenuItem(value: 'C', child: Text('C')),
         ],
         onChanged: (v) {
           _answers[key] = v ?? 'C';
