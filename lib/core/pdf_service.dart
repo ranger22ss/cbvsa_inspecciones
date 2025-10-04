@@ -33,6 +33,168 @@ class PdfService {
         ? ' el ${inspection.formattedDate}'
         : '';
 
+    pw.Widget buildSignatureBlock() {
+      final nombre = inspection.inspector.nombre.isNotEmpty
+          ? inspection.inspector.nombre.toUpperCase()
+          : 'INSPECTOR';
+      final rango = inspection.inspector.rango.isNotEmpty
+          ? inspection.inspector.rango.toUpperCase()
+          : 'INSPECTOR';
+      return pw.Column(
+        mainAxisSize: pw.MainAxisSize.min,
+        crossAxisAlignment: pw.CrossAxisAlignment.center,
+        children: [
+          pw.Container(
+            padding: const pw.EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: pw.BoxDecoration(
+              color: PdfColors.amber100,
+              borderRadius: pw.BorderRadius.circular(6),
+            ),
+            child: pw.Column(
+              children: [
+                pw.Text(
+                  nombre,
+                  style: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold,
+                  ),
+                ),
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  rango,
+                  style: const pw.TextStyle(fontSize: 10),
+                  textAlign: pw.TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          pw.SizedBox(height: 12),
+          pw.Text(
+            'Cuerpo de Bomberos Voluntario de San Alberto Cesar',
+            style: const pw.TextStyle(fontSize: 10),
+          ),
+        ],
+      );
+    }
+
+    String formatAnswer(String value) {
+      final normalized = value.trim().toLowerCase();
+      if (normalized.isEmpty) return 'Sin respuesta registrada';
+      switch (normalized) {
+        case 'yes':
+        case 'si':
+          return 'Sí';
+        case 'no':
+          return 'No';
+        case 'na':
+        case 'n/a':
+        case 'no aplica':
+          return 'No aplica';
+        case 'a':
+          return 'Nivel A';
+        case 'b':
+          return 'Nivel B';
+        case 'c':
+          return 'Nivel C';
+        default:
+          return value.trim();
+      }
+    }
+
+    String buildObservationText(_ModuleItemData item) {
+      final buffer = <String>[];
+      if (item.observacion.trim().isNotEmpty) {
+        buffer.add(item.observacion.trim());
+      }
+      final photoObservations = item.fotos
+          .map((foto) => foto.observacion.trim())
+          .where((text) => text.isNotEmpty)
+          .toList();
+      if (photoObservations.isNotEmpty) {
+        buffer.addAll(photoObservations.map((obs) => '• $obs'));
+      }
+      if (buffer.isEmpty) {
+        return 'Sin observaciones registradas.';
+      }
+      return buffer.join('\n');
+    }
+
+    pw.Widget buildQuestionCard(_ModuleItemData item) {
+      final answerText = formatAnswer(item.respuesta);
+      final observationText = buildObservationText(item);
+      return pw.Container(
+        width: double.infinity,
+        margin: const pw.EdgeInsets.symmetric(vertical: 6),
+        padding: const pw.EdgeInsets.all(12),
+        decoration: pw.BoxDecoration(
+          borderRadius: pw.BorderRadius.circular(8),
+          border: pw.Border.all(color: PdfColors.grey600, width: 0.7),
+        ),
+        child: pw.Column(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Text(
+              'Pregunta',
+              style: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                color: PdfColors.blueGrey800,
+              ),
+            ),
+            pw.SizedBox(height: 4),
+            pw.Text(item.preguntaTexto.isNotEmpty
+                ? item.preguntaTexto
+                : 'Pregunta sin título'),
+            pw.SizedBox(height: 10),
+            pw.Row(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        'Respuesta',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.blueGrey800,
+                        ),
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text(answerText),
+                      if (item.puntaje != null)
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.only(top: 6),
+                          child: pw.Text(
+                            'Puntaje obtenido: ${item.puntaje}',
+                            style: const pw.TextStyle(fontSize: 10),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                pw.SizedBox(width: 16),
+                pw.Expanded(
+                  child: pw.Column(
+                    crossAxisAlignment: pw.CrossAxisAlignment.start,
+                    children: [
+                      pw.Text(
+                        'Observación',
+                        style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold,
+                          color: PdfColors.blueGrey800,
+                        ),
+                      ),
+                      pw.SizedBox(height: 4),
+                      pw.Text(observationText),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
     // ---------- HOJA 1 ----------
     pdf.addPage(
       pw.Page(
@@ -51,6 +213,11 @@ class PdfService {
                 style: const pw.TextStyle(fontSize: 12),
               ),
               pw.SizedBox(height: 20),
+              pw.Text(
+                'REFERENTES',
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+              ),
+              pw.SizedBox(height: 6),
               pw.Text(inspection.nombreComercial.toUpperCase()),
               pw.Text(inspection.representanteLegal),
               pw.Text(inspection.direccion),
@@ -58,14 +225,16 @@ class PdfService {
               pw.SizedBox(height: 10),
               pw.Text('San Alberto - Cesar'),
               pw.SizedBox(height: 20),
-              pw.Text('Asunto: Informe de inspección protección contra incendios y seguridad humana.'),
+              pw.Text(
+                'Asunto: Informe de inspección protección contra incendios y seguridad humana.',
+              ),
               pw.SizedBox(height: 20),
               pw.Text('Cordial saludo respetado/a ${inspection.representanteLegal},'),
               pw.SizedBox(height: 10),
               pw.Text(
                 'En atención a su comunicado mediante el cual solicita inspección ocular a través del radicado #${inspection.radicado} a ${inspection.nombreComercial}, '
-                'ubicado en la ${inspection.direccion}, el cuerpo de bomberos se permite manifestar las observaciones y recomendaciones encontradas en el recorrido realizado, '
-                'de acuerdo al artículo 42 de la Ley 1575 de 2012 “Ley general de bomberos de Colombia”.',
+                'ubicado en la ${inspection.direccion}, el Cuerpo de Bomberos se permite manifestar las observaciones y recomendaciones encontradas en el recorrido realizado, '
+                'de acuerdo con el artículo 42 de la Ley 1575 de 2012 “Ley general de bomberos de Colombia”.',
               ),
               pw.SizedBox(height: 10),
               pw.Text(
@@ -91,72 +260,183 @@ class PdfService {
       ),
     );
 
-    // ---------- HOJA 2 ----------
+    // ---------- HOJA 2 Y SIGUIENTES (Información general y observaciones) ----------
     pdf.addPage(
       pw.MultiPage(
-        build: (context) => [
-          pw.Text('1. Ubicación del establecimiento'),
-          pw.Text(
-            'El establecimiento ${inspection.nombreComercial} se encuentra ubicado en ${inspection.direccion}.',
-          ),
-          pw.SizedBox(height: 10),
-          pw.Text('Foto fachada:'),
-          pw.SizedBox(height: 10),
-          if (fachadaBytes != null)
-            pw.Image(pw.MemoryImage(fachadaBytes), height: 140, fit: pw.BoxFit.cover)
-          else
-            pw.Container(
-              height: 120,
-              color: PdfColors.grey300,
-              alignment: pw.Alignment.center,
-              child: pw.Text('Sin imagen disponible'),
-            ),
-          pw.SizedBox(height: 20),
-          pw.Text('2. Recomendaciones visita anterior y antecedentes del establecimiento'),
-          pw.Table.fromTextArray(
-            headers: const ['Pregunta', 'Sí', 'No'],
-            data: [
-              [
-                'Se subsanaron observaciones de la inspección anterior',
-                inspection.visitaAnterior.subsanadasObsPrevias ? 'X' : '',
-                inspection.visitaAnterior.subsanadasObsPrevias ? '' : 'X',
+        build: (context) {
+          final widgets = <pw.Widget>[];
+
+          widgets.add(
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  '1. Ubicación del establecimiento',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                ),
+                pw.SizedBox(height: 6),
+                pw.Text(
+                  'El establecimiento ${inspection.nombreComercial} se encuentra ubicado en ${inspection.direccion}.',
+                ),
+                pw.SizedBox(height: 10),
+                pw.Text('Foto fachada:'),
+                pw.SizedBox(height: 10),
+                if (fachadaBytes != null)
+                  pw.ClipRRect(
+                    horizontalRadius: 6,
+                    verticalRadius: 6,
+                    child: pw.Image(
+                      pw.MemoryImage(fachadaBytes),
+                      height: 140,
+                      fit: pw.BoxFit.cover,
+                    ),
+                  )
+                else
+                  pw.Container(
+                    height: 120,
+                    color: PdfColors.grey300,
+                    alignment: pw.Alignment.center,
+                    child: pw.Text('Sin imagen disponible'),
+                  ),
               ],
-              [
-                'Se presentaron emergencias en el último año',
-                inspection.visitaAnterior.emergenciasUltimoAnio ? 'X' : '',
-                inspection.visitaAnterior.emergenciasUltimoAnio ? '' : 'X',
-              ],
-            ],
-          ),
-          pw.SizedBox(height: 20),
-          pw.Text('3. Observaciones sobre condiciones de seguridad humana y protección contra incendios'),
-          for (final module in inspection.modules) ...[
-            pw.SizedBox(height: 15),
-            pw.Text(
-              module.titulo,
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
             ),
-            if (module.items.isNotEmpty)
-              pw.Table.fromTextArray(
-                headers: const ['ITEM', 'Recomendación'],
-                data: [
-                  for (var i = 0; i < module.items.length; i++)
-                    [
-                      (i + 1).toString(),
-                      module.items[i].recomendacion.isNotEmpty
-                          ? module.items[i].recomendacion
-                          : module.items[i].preguntaTexto,
-                    ],
+          );
+
+          widgets.add(pw.SizedBox(height: 20));
+
+          widgets.add(
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  '2. Recomendaciones visita anterior y antecedentes del establecimiento',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                ),
+                pw.SizedBox(height: 8),
+                pw.Text('Tabla 1. Evaluación de requerimientos visitas anteriores'),
+                pw.SizedBox(height: 6),
+                pw.Table(
+                  border: pw.TableBorder.all(color: PdfColors.grey600, width: 0.7),
+                  columnWidths: {
+                    0: const pw.FlexColumnWidth(4),
+                    1: const pw.FlexColumnWidth(1),
+                    2: const pw.FlexColumnWidth(1),
+                  },
+                  children: [
+                    pw.TableRow(
+                      decoration: pw.BoxDecoration(color: PdfColors.grey300),
+                      children: const [
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(6),
+                          child: pw.Text('Requerimiento'),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(6),
+                          child: pw.Text('Sí'),
+                        ),
+                        pw.Padding(
+                          padding: pw.EdgeInsets.all(6),
+                          child: pw.Text('No'),
+                        ),
+                      ],
+                    ),
+                    pw.TableRow(
+                      children: [
+                        const pw.Padding(
+                          padding: pw.EdgeInsets.all(6),
+                          child: pw.Text(
+                            'Se subsanaron observaciones de la inspección anterior',
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text(
+                            inspection.visitaAnterior.subsanadasObsPrevias ? 'X' : '',
+                            textAlign: pw.TextAlign.center,
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text(
+                            inspection.visitaAnterior.subsanadasObsPrevias ? '' : 'X',
+                            textAlign: pw.TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                    pw.TableRow(
+                      children: [
+                        const pw.Padding(
+                          padding: pw.EdgeInsets.all(6),
+                          child: pw.Text('Se presentaron emergencias en el último año'),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text(
+                            inspection.visitaAnterior.emergenciasUltimoAnio ? 'X' : '',
+                            textAlign: pw.TextAlign.center,
+                          ),
+                        ),
+                        pw.Padding(
+                          padding: const pw.EdgeInsets.all(6),
+                          child: pw.Text(
+                            inspection.visitaAnterior.emergenciasUltimoAnio ? '' : 'X',
+                            textAlign: pw.TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+
+          widgets.add(pw.SizedBox(height: 20));
+
+          widgets.add(
+            pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text(
+                  '3. Observaciones sobre condiciones de seguridad humana y protección contra incendios',
+                  style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                ),
+                pw.SizedBox(height: 8),
+                for (final module in inspection.modules) ...[
+                  pw.Container(
+                    width: double.infinity,
+                    margin: const pw.EdgeInsets.only(top: 16),
+                    padding: const pw.EdgeInsets.all(12),
+                    decoration: pw.BoxDecoration(
+                      color: PdfColors.grey200,
+                      borderRadius: pw.BorderRadius.circular(8),
+                    ),
+                    child: pw.Text(
+                      module.titulo.isNotEmpty
+                          ? module.titulo
+                          : 'Módulo sin título',
+                      style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+                    ),
+                  ),
+                  if (module.items.isNotEmpty)
+                    ...module.items.map(buildQuestionCard)
+                  else
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.symmetric(vertical: 8),
+                      child: const pw.Text('Sin observaciones registradas para este módulo.'),
+                    ),
                 ],
-              )
-            else
-              pw.Text('Sin observaciones registradas para este módulo.'),
-          ],
-        ],
+              ],
+            ),
+          );
+
+          return widgets;
+        },
       ),
     );
 
-    // ---------- HOJA 3/4 (Conclusión y Vigencia) ----------
+    // ---------- HOJA 3 (Conclusión y Vigencia) ----------
     pdf.addPage(
       pw.Page(
         build: (context) => pw.Column(
@@ -166,8 +446,17 @@ class PdfService {
             pw.SizedBox(height: 10),
             pw.Text(
               'Que los aspectos inspeccionados al establecimiento ${inspection.nombreComercial}, ubicado en la ${inspection.direccion} '
-              '${inspection.aprobado ? "SON FAVORABLES Y CUENTA" : "NO SON FAVORABLES Y NO CUENTA"} '
-              'con los requisitos mínimos en sistemas de seguridad humana y protección contra incendios exigidos por la normativa.',
+              '${inspection.aprobado ? 'SON FAVORABLES Y CUENTA' : 'NO SON FAVORABLES Y NO CUENTA'} con los requisitos mínimos en sistemas de seguridad humana y protección contra incendios exigidos por la normativa colombiana.',
+            ),
+            pw.SizedBox(height: 12),
+            pw.Text(
+              'A su vez, ${inspection.nombreComercial} se compromete a acatar todas las recomendaciones emanadas por el Cuerpo de Bomberos Voluntarios del municipio de San Alberto – Cesar, '
+              'en el entendido de que son acciones obligatorias para garantizar la protección integral de los bienes tangibles e intangibles y la vida de los ocupantes, visitantes y trabajadores del establecimiento.',
+            ),
+            pw.SizedBox(height: 12),
+            pw.Text(
+              'Se sugiere al ${inspection.nombreComercial} complementar la visita realizada con la verificación del plan de emergencias, '
+              'el mantenimiento de los sistemas instalados y la capacitación permanente del personal responsable de la seguridad humana y la protección contra incendios.',
             ),
             pw.SizedBox(height: 20),
             pw.Text('5. Vigencia', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
@@ -188,34 +477,42 @@ class PdfService {
                 color: inspection.aprobado ? PdfColors.green : PdfColors.red,
               ),
             ),
+            if (photoRows.isEmpty) ...[
+              pw.Spacer(),
+              buildSignatureBlock(),
+            ],
           ],
         ),
       ),
     );
 
-    // ---------- HOJA FINAL (Registro fotográfico) ----------
+    // ---------- HOJAS FINALES (Registro fotográfico) ----------
     if (photoRows.isNotEmpty) {
       pdf.addPage(
         pw.MultiPage(
           build: (context) => [
             pw.Text('6. Registro fotográfico', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 12),
             pw.Table(
-              border: pw.TableBorder.all(),
+              border: pw.TableBorder.all(color: PdfColors.grey600, width: 0.7),
+              columnWidths: {
+                0: const pw.FlexColumnWidth(2),
+                1: const pw.FlexColumnWidth(3),
+              },
               children: [
                 pw.TableRow(
                   decoration: pw.BoxDecoration(color: PdfColors.grey300),
-                  children: [
+                  children: const [
                     pw.Padding(
-                      padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('Hallazgo'),
+                      padding: pw.EdgeInsets.all(6),
+                      child: pw.Text(
+                        'Imagen',
+                        textAlign: pw.TextAlign.center,
+                      ),
                     ),
                     pw.Padding(
-                      padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('Imagen'),
-                    ),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(5),
-                      child: pw.Text('Observaciones y/o Recomendaciones'),
+                      padding: pw.EdgeInsets.all(6),
+                      child: pw.Text('Observaciones del inspector'),
                     ),
                   ],
                 ),
@@ -223,38 +520,67 @@ class PdfService {
                   pw.TableRow(
                     children: [
                       pw.Padding(
-                        padding: const pw.EdgeInsets.all(5),
-                        child: pw.Text(row.hallazgo),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.all(5),
-                        child: row.imageBytes != null
-                            ? pw.Image(
-                                pw.MemoryImage(row.imageBytes!),
-                                height: 80,
-                                fit: pw.BoxFit.cover,
-                              )
-                            : pw.Container(
-                                height: 80,
-                                alignment: pw.Alignment.center,
-                                color: PdfColors.grey300,
-                                child: pw.Text('Sin imagen'),
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Column(
+                          children: [
+                            pw.Image(
+                              pw.MemoryImage(row.imageBytes),
+                              height: 140,
+                              fit: pw.BoxFit.cover,
+                            ),
+                            if (row.hallazgo.isNotEmpty) ...[
+                              pw.SizedBox(height: 6),
+                              pw.Text(
+                                row.hallazgo,
+                                style: const pw.TextStyle(fontSize: 10),
+                                textAlign: pw.TextAlign.center,
                               ),
+                            ],
+                          ],
+                        ),
                       ),
                       pw.Padding(
-                        padding: const pw.EdgeInsets.all(5),
-                        child: pw.Text(row.observacion),
+                        padding: const pw.EdgeInsets.all(6),
+                        child: pw.Column(
+                          crossAxisAlignment: pw.CrossAxisAlignment.start,
+                          children: [
+                            if (row.modulo.isNotEmpty)
+                              pw.Text(
+                                row.modulo,
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            if (row.observacion.trim().isNotEmpty)
+                              pw.Text(
+                                row.observacion.trim(),
+                                style: const pw.TextStyle(fontSize: 10),
+                              )
+                            else
+                              const pw.Text(
+                                'Sin observación registrada.',
+                                style: pw.TextStyle(fontSize: 10),
+                              ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
               ],
             ),
-            pw.SizedBox(height: 40),
-            pw.Text(
-              inspection.inspector.nombre,
-              style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
-            ),
           ],
+        ),
+      );
+
+      pdf.addPage(
+        pw.Page(
+          build: (context) => pw.Column(
+            children: [
+              pw.Spacer(),
+              buildSignatureBlock(),
+            ],
+          ),
         ),
       );
     }
@@ -262,30 +588,32 @@ class PdfService {
     return pdf.save();
   }
 
-  // 🔥 Aquí la firma corregida
   static Future<Uint8List?> _loadNetworkImage(String? url) async {
-  if (url == null || url.isEmpty) {
-    return null;
-  }
-  try {
-    final response = await http.get(Uri.parse(url));
-    if (response.statusCode == 200) {
-      return response.bodyBytes;
+    if (url == null || url.isEmpty) {
+      return null;
     }
-    return null;
-  } catch (e) {
-    return null;
+    try {
+      final response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        return response.bodyBytes;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
-}
 
   static Future<List<_PhotoRow>> _buildPhotoRows(List<_ModuleData> modules) async {
     final rows = <_PhotoRow>[];
     for (final module in modules) {
       for (final item in module.items) {
         for (final foto in item.fotos) {
+          if (foto.url == null) continue;
           final bytes = await _loadNetworkImage(foto.url);
+          if (bytes == null) continue;
           rows.add(
             _PhotoRow(
+              modulo: module.titulo,
               hallazgo: item.preguntaTexto,
               imageBytes: bytes,
               observacion: foto.observacion,
@@ -434,7 +762,9 @@ class _ModuleData {
     final rawItems = (map['items'] as List?) ?? const [];
     return _ModuleData(
       titulo: (map['titulo'] ?? '').toString(),
-      items: rawItems.map((item) => _ModuleItemData.fromMap(item as Map<String, dynamic>)).toList(),
+      items: rawItems
+          .map((item) => _ModuleItemData.fromMap(item as Map<String, dynamic>))
+          .toList(),
     );
   }
 }
@@ -442,21 +772,25 @@ class _ModuleData {
 class _ModuleItemData {
   _ModuleItemData({
     required this.preguntaTexto,
-    required this.recomendacion,
+    required this.respuesta,
+    required this.observacion,
+    required this.puntaje,
     required this.fotos,
   });
 
   final String preguntaTexto;
-  final String recomendacion;
+  final String respuesta;
+  final String observacion;
+  final int? puntaje;
   final List<_FotoData> fotos;
 
   static _ModuleItemData fromMap(Map<String, dynamic> map) {
     final rawFotos = (map['fotos'] as List?) ?? const [];
-    String _extractRecomendacion(Map<String, dynamic> json) {
+    String extractObservacion(Map<String, dynamic> json) {
       final candidates = [
-        json['recomendacion'],
-        json['recomendaciones'],
         json['observacion'],
+        json['observaciones'],
+        json['recomendacion'],
         json['respuesta'],
       ];
       return candidates
@@ -467,9 +801,18 @@ class _ModuleItemData {
           .toString();
     }
 
+    int? extractScore(dynamic value) {
+      if (value == null) return null;
+      if (value is int) return value;
+      if (value is double) return value.round();
+      return int.tryParse(value.toString());
+    }
+
     return _ModuleItemData(
       preguntaTexto: (map['pregunta_texto'] ?? map['pregunta'] ?? '').toString(),
-      recomendacion: _extractRecomendacion(map),
+      respuesta: (map['respuesta'] ?? '').toString(),
+      observacion: extractObservacion(map),
+      puntaje: extractScore(map['puntaje']),
       fotos: rawFotos
           .map((foto) => _FotoData.fromMap((foto ?? {}) as Map<String, dynamic>))
           .toList(),
@@ -493,12 +836,14 @@ class _FotoData {
 
 class _PhotoRow {
   _PhotoRow({
+    required this.modulo,
     required this.hallazgo,
     required this.imageBytes,
     required this.observacion,
   });
 
+  final String modulo;
   final String hallazgo;
-  final Uint8List? imageBytes;
+  final Uint8List imageBytes;
   final String observacion;
 }
