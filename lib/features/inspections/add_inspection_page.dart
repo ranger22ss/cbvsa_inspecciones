@@ -153,11 +153,11 @@ class _AddInspectionPageState extends ConsumerState<AddInspectionPage> {
             const SizedBox(height: 12),
             DropdownButtonFormField<String>(
               value: _tipoInspeccion,
-              items: const [
-                DropdownMenuItem(value: 'comercio_pequeno', child: Text('Comercio pequeño')),
-                DropdownMenuItem(value: 'comercio_grande', child: Text('Comercio grande')),
-                DropdownMenuItem(value: 'estacion_servicio', child: Text('Estación de servicio')),
-                DropdownMenuItem(value: 'industria', child: Text('Industria')),
+              items: [
+                const DropdownMenuItem(value: 'comercio_pequeno', child: Text('Comercio pequeño')),
+                const DropdownMenuItem(value: 'comercio_grande', child: Text('Comercio grande')),
+                const DropdownMenuItem(value: 'estacion_servicio', child: Text('Estación de servicio')),
+                const DropdownMenuItem(value: 'industria', child: Text('Industria')),
               ],
               onChanged: (v) => setState(() => _tipoInspeccion = v ?? 'comercio_pequeno'),
               decoration: const InputDecoration(labelText: 'Tipo de inspección'),
