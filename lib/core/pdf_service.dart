@@ -1,6 +1,9 @@
+// ignore_for_file: unused_import
+
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 import 'package:http/http.dart' as http;
 
 class PdfService {
@@ -44,7 +47,7 @@ class PdfService {
         crossAxisAlignment: pw.CrossAxisAlignment.center,
         children: [
           pw.Container(
-            padding: const pw.EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            padding: pw.EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             decoration: pw.BoxDecoration(
               color: PdfColors.amber100,
               borderRadius: pw.BorderRadius.circular(6),
@@ -60,7 +63,7 @@ class PdfService {
                 pw.SizedBox(height: 4),
                 pw.Text(
                   rango,
-                  style: const pw.TextStyle(fontSize: 10),
+                  style: pw.TextStyle(fontSize: 10),
                   textAlign: pw.TextAlign.center,
                 ),
               ],
@@ -69,7 +72,7 @@ class PdfService {
           pw.SizedBox(height: 12),
           pw.Text(
             'Cuerpo de Bomberos Voluntario de San Alberto Cesar',
-            style: const pw.TextStyle(fontSize: 10),
+            style: pw.TextStyle(fontSize: 10),
           ),
         ],
       );
@@ -122,8 +125,8 @@ class PdfService {
       final observationText = buildObservationText(item);
       return pw.Container(
         width: double.infinity,
-        margin: const pw.EdgeInsets.symmetric(vertical: 6),
-        padding: const pw.EdgeInsets.all(12),
+        margin: pw.EdgeInsets.symmetric(vertical: 6),
+        padding: pw.EdgeInsets.all(12),
         decoration: pw.BoxDecoration(
           borderRadius: pw.BorderRadius.circular(8),
           border: pw.Border.all(color: PdfColors.grey600, width: 0.7),
@@ -161,10 +164,10 @@ class PdfService {
                       pw.Text(answerText),
                       if (item.puntaje != null)
                         pw.Padding(
-                          padding: const pw.EdgeInsets.only(top: 6),
+                          padding: pw.EdgeInsets.only(top: 6),
                           child: pw.Text(
                             'Puntaje obtenido: ${item.puntaje}',
-                            style: const pw.TextStyle(fontSize: 10),
+                            style: pw.TextStyle(fontSize: 10),
                           ),
                         ),
                     ],
@@ -324,7 +327,7 @@ class PdfService {
                   children: [
                     pw.TableRow(
                       decoration: pw.BoxDecoration(color: PdfColors.grey300),
-                      children: const [
+                      children: [
                         pw.Padding(
                           padding: pw.EdgeInsets.all(6),
                           child: pw.Text('Requerimiento'),
@@ -341,7 +344,7 @@ class PdfService {
                     ),
                     pw.TableRow(
                       children: [
-                        const pw.Padding(
+                        pw.Padding(
                           padding: pw.EdgeInsets.all(6),
                           child: pw.Text(
                             'Se subsanaron observaciones de la inspección anterior',
@@ -365,19 +368,19 @@ class PdfService {
                     ),
                     pw.TableRow(
                       children: [
-                        const pw.Padding(
+                        pw.Padding(
                           padding: pw.EdgeInsets.all(6),
                           child: pw.Text('Se presentaron emergencias en el último año'),
                         ),
                         pw.Padding(
-                          padding: const pw.EdgeInsets.all(6),
+                          padding: pw.EdgeInsets.all(6),
                           child: pw.Text(
                             inspection.visitaAnterior.emergenciasUltimoAnio ? 'X' : '',
                             textAlign: pw.TextAlign.center,
                           ),
                         ),
                         pw.Padding(
-                          padding: const pw.EdgeInsets.all(6),
+                          padding: pw.EdgeInsets.all(6),
                           child: pw.Text(
                             inspection.visitaAnterior.emergenciasUltimoAnio ? '' : 'X',
                             textAlign: pw.TextAlign.center,
@@ -423,7 +426,7 @@ class PdfService {
                   else
                     pw.Padding(
                       padding: const pw.EdgeInsets.symmetric(vertical: 8),
-                      child: const pw.Text('Sin observaciones registradas para este módulo.'),
+                      child: pw.Text('Sin observaciones registradas para este módulo.'),
                     ),
                 ],
               ],
@@ -501,7 +504,7 @@ class PdfService {
               children: [
                 pw.TableRow(
                   decoration: pw.BoxDecoration(color: PdfColors.grey300),
-                  children: const [
+                  children: [
                     pw.Padding(
                       padding: pw.EdgeInsets.all(6),
                       child: pw.Text(
@@ -557,7 +560,7 @@ class PdfService {
                                 style: const pw.TextStyle(fontSize: 10),
                               )
                             else
-                              const pw.Text(
+                              pw.Text(
                                 'Sin observación registrada.',
                                 style: pw.TextStyle(fontSize: 10),
                               ),
@@ -735,7 +738,7 @@ class _VisitaAnterior {
   final bool emergenciasUltimoAnio;
 
   factory _VisitaAnterior.fromMap(Map<String, dynamic> map) {
-    bool toBool(dynamic value) {
+    bool _toBool(dynamic value) {
       if (value is bool) return value;
       if (value is num) return value != 0;
       if (value is String) {
@@ -746,8 +749,8 @@ class _VisitaAnterior {
     }
 
     return _VisitaAnterior(
-      subsanadasObsPrevias: toBool(map['subsanadas_obs_previas']),
-      emergenciasUltimoAnio: toBool(map['emergencias_ultimo_anio']),
+      subsanadasObsPrevias: _toBool(map['subsanadas_obs_previas']),
+      emergenciasUltimoAnio: _toBool(map['emergencias_ultimo_anio']),
     );
   }
 }
