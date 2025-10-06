@@ -28,8 +28,8 @@ class AppBranding {
 
   /// Datos de contacto que se muestran en la pantalla "Acerca de".
   static const contactLocation = 'San Alberto, Cesar – Colombia';
-  static const contactEmail = 'inspecciones@cbvsa.gov.co';
-  static const contactPhone = '+57 320 000 0000';
+  static const contactEmail = 'cuerpobomberossanalberto@gmail.com';
+  static const contactPhone = '+57 315 353 8706';
 
   /// Ruta del logo de la institución (opcional).
   ///
