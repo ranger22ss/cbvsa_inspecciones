@@ -10,6 +10,7 @@ class SummaryConclusionPage extends ConsumerStatefulWidget {
   final List<Map<String, dynamic>> modules;
   final int passingScore;
   final int totalScore;
+  final int maxScore;
   final bool aprobado;
 
   const SummaryConclusionPage({
@@ -19,6 +20,7 @@ class SummaryConclusionPage extends ConsumerStatefulWidget {
     required this.modules,
     required this.passingScore,
     required this.totalScore,
+    required this.maxScore,
     required this.aprobado,
   });
 
@@ -180,7 +182,7 @@ class _SummaryConclusionPageState
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Text('Respuesta: '),
+                          const Text('Respuesta: '),
                           Text(
                             item['respuesta'] == 'yes'
                                 ? 'Sí / Cumple'

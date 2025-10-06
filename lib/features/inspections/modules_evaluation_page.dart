@@ -205,6 +205,7 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
         modules: modulesJson,
         passingScore: _tpl.passingScore,
         totalScore: _score,
+        maxScore: _tpl.maxScore,
         aprobado: aprobado,
       ),
     ));
