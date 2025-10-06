@@ -550,6 +550,7 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
         'nombre': inspectorProfile?['full_name'] ?? user.email,
         'rango': inspectorProfile?['rank'] ?? '',
         'documento': inspectorProfile?['national_id'] ?? '',
+        'correo': user.email ?? '',
       };
 
       final modulesJson = _buildModulesPayload();
@@ -575,6 +576,7 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
           'puntaje_total': _score,
           'aprobado': aprobado,
           'puntaje_minimo': _template.passingScore,
+          'puntaje_maximo': _template.maxScore,
         },
         'inspector': inspectorJson,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
@@ -591,13 +593,19 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Inspección guardada correctamente')), 
+        SnackBar(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          content: const Text('Inspección guardada correctamente'),
+        ),
       );
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar: $e')),
+        SnackBar(
+          backgroundColor: Theme.of(context).colorScheme.error,
+          content: Text('Error al guardar: $e'),
+        ),
       );
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -854,6 +862,7 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
   Widget _buildStepThree() {
     final aprobado = _score >= _template.passingScore;
     final moduleSummaries = _buildModuleSummaries();
+    final scheme = Theme.of(context).colorScheme;
 
     return ListView(
       padding: const EdgeInsets.all(16),
@@ -875,7 +884,14 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
         Text('Puntaje total: $_score / ${_template.passingScore}'),
         Chip(
           label: Text(aprobado ? 'APROBADO' : 'NO APROBADO'),
-          backgroundColor: aprobado ? Colors.green[100] : Colors.red[100],
+          backgroundColor:
+              aprobado ? scheme.primaryContainer : scheme.errorContainer,
+          labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: aprobado
+                    ? scheme.onPrimaryContainer
+                    : scheme.onErrorContainer,
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const Divider(),
         Text('Módulos evaluados:',

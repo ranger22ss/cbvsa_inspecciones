@@ -56,6 +56,11 @@ class HomePage extends ConsumerWidget {
                   label: 'Mis inspecciones',
                   onPressed: () => context.push('/inspections'),
                 ),
+                AppNavButton(
+                  icon: Icons.info_outline,
+                  label: 'Acerca de CBVSA',
+                  onPressed: () => context.push('/about'),
+                ),
                 if (user.role == UserRole.admin)
                   AppNavButton(
                     icon: Icons.admin_panel_settings,

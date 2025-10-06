@@ -35,6 +35,8 @@ class InspectionDetailPage extends ConsumerWidget {
 
     final modules = (inspection['modules'] ?? []) as List;
 
+    final scheme = Theme.of(context).colorScheme;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detalle de Inspección'),
@@ -47,7 +49,7 @@ class InspectionDetailPage extends ConsumerWidget {
                 MaterialPageRoute(
                   builder: (_) => NewInspectionWizard(
                     existing: Map<String, dynamic>.from(inspection),
-                    inspectionId: inspection['id'] as String?,
+                    inspectionId: inspection['id']?.toString(),
                   ),
                 ),
               );
@@ -73,7 +75,10 @@ class InspectionDetailPage extends ConsumerWidget {
                     bytes: bytes, filename: 'informe_${radicado}.pdf');
               } catch (e) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error PDF: $e')),
+                  SnackBar(
+                    backgroundColor: scheme.error,
+                    content: Text('Error PDF: $e'),
+                  ),
                 );
               }
             },
@@ -92,7 +97,7 @@ class InspectionDetailPage extends ConsumerWidget {
           Text(
             aprobado ? 'APROBADO ✅' : 'NO APROBADO ❌',
             style: TextStyle(
-              color: aprobado ? Colors.green : Colors.red,
+              color: aprobado ? scheme.primary : scheme.error,
               fontWeight: FontWeight.bold,
             ),
           ),
