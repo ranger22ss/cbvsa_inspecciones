@@ -21,12 +21,18 @@ final myInspectionsProvider =
 class InspectionsListPage extends ConsumerWidget {
   const InspectionsListPage({super.key});
 
+  int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is double) return value.round();
+    return int.tryParse(value.toString()) ?? 0;
+  }
+
   bool _isApproved(Map<String, dynamic> row) {
     try {
-      final template = (row['tipo_inspeccion'] ?? '').toString();
-      final score = (row['resultado']?['puntaje_total'] ?? 0) as int;
-      final t = templates.firstWhere((e) => e.code == template);
-      return score >= t.passingScore;
+      final templateCode = (row['tipo_inspeccion'] ?? '').toString();
+      final template = templateByCode(templateCode);
+      final score = _toInt(row['resultado']?['puntaje_total']);
+      return score >= template.passingScore;
     } catch (_) {
       return false;
     }
@@ -50,18 +56,19 @@ class InspectionsListPage extends ConsumerWidget {
               final r = rows[i];
               final name = r['nombre_comercial'] ?? '—';
               final radicado = r['radicado'] ?? '—';
-              final score = (r['resultado']?['puntaje_total'] ?? 0) as int;
-              final template = r['tipo_inspeccion'] ?? '';
+              final templateCode = (r['tipo_inspeccion'] ?? '').toString();
+              final template = templateByCode(templateCode);
+              final score = _toInt(r['resultado']?['puntaje_total']);
               final date = (r['fecha_inspeccion'] ?? '').toString();
               final ok = _isApproved(r);
 
               return ListTile(
                 title: Text(name),
-                subtitle: Text('Radicado: $radicado • $template • $date'),
+                subtitle: Text('Radicado: $radicado • ${template.name} • $date'),
                 trailing: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text('$score pts'),
+                    Text('$score / ${template.maxScore} pts'),
                     Text(ok ? 'APROBADO' : 'NO APROBADO',
                         style: TextStyle(
                           color: ok ? Colors.green : Colors.red,

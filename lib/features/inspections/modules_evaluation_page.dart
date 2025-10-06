@@ -224,6 +224,7 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
         tipoInspeccion: _tipoNormalizado,
         modules: modulesJson,
         passingScore: _tpl.passingScore,
+        maxScore: _tpl.maxScore,
         totalScore: _score,
         aprobado: aprobado,
       ),
@@ -238,7 +239,7 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'Puntaje mínimo: ${_tpl.passingScore} — Actual: $_score',
+            'Puntaje mínimo: ${_tpl.passingScore} / Máximo: ${_tpl.maxScore} — Actual: $_score',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 12),

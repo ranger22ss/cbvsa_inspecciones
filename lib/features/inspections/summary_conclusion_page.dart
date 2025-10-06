@@ -10,6 +10,7 @@ class SummaryConclusionPage extends ConsumerStatefulWidget {
   final String tipoInspeccion;                         // tipo seleccionado
   final List<Map<String, dynamic>> modules;            // módulos armados en Hoja 2
   final int passingScore;
+  final int maxScore;
   final int totalScore;
   final bool aprobado;
 
@@ -19,6 +20,7 @@ class SummaryConclusionPage extends ConsumerStatefulWidget {
     required this.tipoInspeccion,
     required this.modules,
     required this.passingScore,
+    required this.maxScore,
     required this.totalScore,
     required this.aprobado,
   });
@@ -56,6 +58,7 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
           'puntaje_total': widget.totalScore,   // 👈 ahora sí el real
           'aprobado': aprobado,
           'puntaje_minimo': widget.passingScore,
+          'puntaje_maximo': widget.maxScore,
         },
       };
 
@@ -82,6 +85,7 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
         modules: widget.modules,
         totalScore: widget.totalScore,
         passingScore: widget.passingScore,
+        maxScore: widget.maxScore,
         aprobado: widget.aprobado,
       );
       await Printing.sharePdf(bytes: bytes, filename: 'informe_inspeccion.pdf');
@@ -124,7 +128,7 @@ class _SummaryConclusionPageState extends ConsumerState<SummaryConclusionPage> {
         padding: const EdgeInsets.all(16),
         children: [
           Text(
-            'Puntaje total: ${widget.totalScore} / Mínimo: ${widget.passingScore}',
+            'Puntaje total: ${widget.totalScore} / ${widget.maxScore} (mínimo: ${widget.passingScore})',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 8),
