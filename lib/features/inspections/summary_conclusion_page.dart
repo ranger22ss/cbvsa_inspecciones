@@ -22,7 +22,7 @@ class SummaryConclusionArgs {
     required this.maxScore,
     required this.totalScore,
     required this.maxScore,
-    required this.aprobado,
+    required this.aprobado, required List<Map<String, dynamic>> modules,
   });
 }
 
