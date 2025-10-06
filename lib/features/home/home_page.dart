@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../core/branding/app_branding.dart';
 import '../../core/providers.dart';
 import '../../core/models.dart';
 import '../../shared/widgets/app_nav_button.dart';
@@ -58,7 +60,7 @@ class HomePage extends ConsumerWidget {
                 ),
                 AppNavButton(
                   icon: Icons.info_outline,
-                  label: 'Acerca de CBVSA',
+                  label: AppBranding.aboutMenuLabel,
                   onPressed: () => context.push('/about'),
                 ),
                 if (user.role == UserRole.admin)

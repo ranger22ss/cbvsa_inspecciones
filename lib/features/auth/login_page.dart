@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import '../../core/branding/app_branding.dart';
 import '../../core/providers.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -18,7 +20,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _isLogin = true;
 
   // Datos iniciales del perfil si es registro:
-  final _nameCtrl = TextEditingController(text: 'Inspector CBVSA');
+  final _nameCtrl =
+      TextEditingController(text: AppBranding.inspectorDefaultName);
   final _idCtrl = TextEditingController(text: '00000000');
   final _rankCtrl = TextEditingController(text: 'Bombero');
 
@@ -102,7 +105,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               key: _formKey,
               child: ListView(
                 children: [
-                  Text('CBVSA Inspecciones', style: Theme.of(context).textTheme.headlineSmall),
+                  Text(AppBranding.appName,
+                      style: Theme.of(context).textTheme.headlineSmall),
                   const SizedBox(height: 12),
                   SwitchListTile(
                     title: Text(_isLogin ? 'Modo: Iniciar sesión' : 'Modo: Crear cuenta'),

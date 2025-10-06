@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../core/branding/app_branding.dart';
+
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
@@ -28,23 +30,10 @@ class AboutPage extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircleAvatar(
-                        radius: 48,
-                        backgroundColor: scheme.primaryContainer,
-                        child: Text(
-                          'CBVSA',
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                color: scheme.onPrimaryContainer,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                      ),
+                      AppBranding.buildAboutLogo(context),
                       const SizedBox(height: 16),
                       Text(
-                        'Cuerpo de Bomberos Voluntarios San Alberto, Cesar',
+                        AppBranding.organizationName,
                         textAlign: TextAlign.center,
                         style: Theme.of(context)
                             .textTheme
@@ -53,7 +42,7 @@ class AboutPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Aplicación oficial para la gestión de inspecciones en campo.',
+                        AppBranding.appTagline,
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
@@ -109,15 +98,15 @@ class AboutPage extends StatelessWidget {
                       const SizedBox(height: 8),
                       _InfoRow(
                         icon: Icons.location_on,
-                        text: 'San Alberto, Cesar – Colombia',
+                        text: AppBranding.contactLocation,
                       ),
                       _InfoRow(
                         icon: Icons.email,
-                        text: 'inspecciones@cbvsa.gov.co',
+                        text: AppBranding.contactEmail,
                       ),
                       _InfoRow(
                         icon: Icons.phone,
-                        text: '+57 320 000 0000',
+                        text: AppBranding.contactPhone,
                       ),
                     ],
                   ),

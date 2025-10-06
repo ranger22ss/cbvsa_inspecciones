@@ -72,3 +72,19 @@ Permite realizar inspecciones, evaluaciones dinámicas y generar informes PDF co
   },
   "created_at": "timestamp"
 }
+
+---
+
+## 🛠️ Personalización de nombre, logo e información institucional
+
+| Elemento | Dónde editar |
+| --- | --- |
+| **Textos visibles en la app** (nombre corto/largo de la estación, lema, datos de contacto, texto del botón “Acerca de…”, nombre por defecto del inspector) | `lib/core/branding/app_branding.dart` |
+| **Logo en pantalla “Acerca de”** | Cambia `logoAssetPath` en `lib/core/branding/app_branding.dart`, agrega el archivo en `assets/images/` y decláralo en `pubspec.yaml` dentro de `flutter/assets`. Si no hay logo, se mostrará la sigla. |
+| **Nombre de la app en Android** | `android/app/src/main/res/values/strings.xml` (`app_name`). |
+| **Nombre de la app en iOS** | `ios/Runner/Info.plist` (`CFBundleDisplayName`). |
+| **Descripción del proyecto** | `pubspec.yaml` (`description`). |
+| **Iconos de la app** | Reemplaza los archivos en `android/app/src/main/res/mipmap-*` y `ios/Runner/Assets.xcassets/AppIcon.appiconset/`. |
+| **Iconos para Web/PWA** | `web/icons/` y el favicon en `web/`.
+
+> 💡 Después de cambiar logos o íconos recuerda correr `flutter pub get` si editas `pubspec.yaml`, y volver a generar íconos con herramientas como [`flutter_launcher_icons`](https://pub.dev/packages/flutter_launcher_icons) si deseas automatizar el proceso.
