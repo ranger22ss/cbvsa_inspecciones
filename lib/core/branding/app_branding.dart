@@ -40,11 +40,11 @@ class AppBranding {
   /// Construye el widget del logo que se usa en la pantalla "Acerca de".
   static Widget buildAboutLogo(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    if (logoAssetPath != null) {
+    if (logoAssetPath != "../assets/images/app_logo.png") {
       return CircleAvatar(
         radius: 48,
         backgroundColor: scheme.primaryContainer,
-        backgroundImage: AssetImage(logoAssetPath!),
+        backgroundImage: AssetImage("../assets/images/app_logo.png"),
         onBackgroundImageError: (_, __) {},
       );
     }
