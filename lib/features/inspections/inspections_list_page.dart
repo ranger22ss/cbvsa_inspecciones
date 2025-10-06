@@ -42,63 +42,6 @@ class InspectionsListPage extends ConsumerWidget {
     }
   }
 
-  Future<void> _deleteInspection(
-    BuildContext context,
-    WidgetRef ref,
-    Map<String, dynamic> inspection,
-  ) async {
-    final id = inspection['id'];
-    if (id == null) {
-      return;
-    }
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Eliminar inspección'),
-          content: const Text(
-            '¿Desea eliminar esta inspección? Esta acción no se puede deshacer.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancelar'),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Eliminar'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed != true) return;
-
-    final supabase = ref.read(supabaseProvider);
-    try {
-      await supabase.from('inspections').delete().eq('id', id);
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-            content: const Text('Inspección eliminada'),
-          ),
-        );
-      }
-      ref.invalidate(myInspectionsProvider);
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Theme.of(context).colorScheme.error,
-          content: Text('No se pudo eliminar: $e'),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final asyncList = ref.watch(myInspectionsProvider);
@@ -185,57 +128,26 @@ class InspectionsListPage extends ConsumerWidget {
                     Text('Creada: $createdText'),
                   ],
                 ),
-                trailing: SizedBox(
-                  width: 132,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        '$score / $maxScore pts',
-                        style: TextStyle(
-                          color: statusColor,
-                          fontWeight: FontWeight.w600,
-                        ),
+                trailing: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '$score / $maxScore pts',
+                      style: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.w600,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        ok ? 'APROBADO' : 'NO APROBADO',
-                        style: TextStyle(
-                          color: statusColor,
-                          fontWeight: FontWeight.w700,
-                        ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      ok ? 'APROBADO' : 'NO APROBADO',
+                      style: TextStyle(
+                        color: statusColor,
+                        fontWeight: FontWeight.w700,
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            tooltip: 'Editar inspección',
-                            icon: Icon(Icons.edit, color: scheme.primary),
-                            onPressed: () async {
-                              final result = await Navigator.of(context).push<bool>(
-                                MaterialPageRoute(
-                                  builder: (_) => NewInspectionWizard(
-                                    existing: Map<String, dynamic>.from(r),
-                                    inspectionId: r['id']?.toString(),
-                                  ),
-                                ),
-                              );
-                              if (result == true && context.mounted) {
-                                ref.invalidate(myInspectionsProvider);
-                              }
-                            },
-                          ),
-                          IconButton(
-                            tooltip: 'Eliminar',
-                            icon: Icon(Icons.delete_outline, color: scheme.error),
-                            onPressed: () => _deleteInspection(context, ref, r),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
                 onTap: () async {
                   final updated = await Navigator.of(context).push<bool>(
