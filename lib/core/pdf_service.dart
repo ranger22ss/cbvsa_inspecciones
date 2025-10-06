@@ -574,18 +574,12 @@ class PdfService {
                   ),
               ],
             ),
+            pw.SizedBox(height: 30),
+            pw.Align(
+              alignment: pw.Alignment.center,
+              child: buildSignatureBlock(),
+            ),
           ],
-        ),
-      );
-
-      pdf.addPage(
-        pw.Page(
-          build: (context) => pw.Column(
-            children: [
-              pw.Spacer(),
-              buildSignatureBlock(),
-            ],
-          ),
         ),
       );
     }

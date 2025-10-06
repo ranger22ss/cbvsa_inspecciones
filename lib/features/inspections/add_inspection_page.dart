@@ -72,8 +72,12 @@ class _AddInspectionPageState extends ConsumerState<AddInspectionPage> {
   void _continuar() {
     if (!_formKey.currentState!.validate()) return;
     if (_fotoFachadaUrl == null) {
+      final scheme = Theme.of(context).colorScheme;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Debes tomar la foto de fachada')),
+        SnackBar(
+          backgroundColor: scheme.error,
+          content: const Text('⚠️ Falta llenar todos los campos obligatorios'),
+        ),
       );
       return;
     }

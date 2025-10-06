@@ -14,7 +14,9 @@ class AppNavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Card(
+      color: scheme.surfaceVariant,
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: onPressed,
@@ -22,12 +24,18 @@ class AppNavButton extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
           child: Row(
             children: [
-              Icon(icon, size: 28),
+              Icon(icon, size: 28, color: scheme.primary),
               const SizedBox(width: 16),
               Expanded(
-                child: Text(label, style: const TextStyle(fontSize: 16)),
+                child: Text(
+                  label,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(color: scheme.onSurface),
+                ),
               ),
-              const Icon(Icons.chevron_right),
+              Icon(Icons.chevron_right, color: scheme.outline),
             ],
           ),
         ),
