@@ -203,14 +203,15 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
 
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => SummaryConclusionPage(
-        baseData: widget.baseData,
-        tipoInspeccion: _tipoNormalizado,
-        modulesData: modulesJson,
-        passingScore: _tpl.passingScore,
-        maxScore: _tpl.maxScore,
-        totalScore: _score,
-        maxScore: _tpl.maxScore,
-        aprobado: aprobado,
+        data: SummaryConclusionArgs(
+          baseData: widget.baseData,
+          tipoInspeccion: _tipoNormalizado,
+          modules: modulesJson,
+          passingScore: _tpl.passingScore,
+          maxScore: _tpl.maxScore,
+          totalScore: _score,
+          aprobado: aprobado,
+        ),
       ),
     ));
   }

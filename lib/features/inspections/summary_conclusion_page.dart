@@ -4,7 +4,7 @@ import 'package:printing/printing.dart';
 import '../../core/pdf_service.dart';
 import '../../core/providers.dart';
 
-class SummaryConclusionPage extends ConsumerStatefulWidget {
+class SummaryConclusionArgs {
   final Map<String, dynamic> baseData;
   final String tipoInspeccion;
   final List<Map<String, dynamic>> modulesData;
@@ -14,8 +14,7 @@ class SummaryConclusionPage extends ConsumerStatefulWidget {
   final int maxScore;
   final bool aprobado;
 
-  const SummaryConclusionPage({
-    super.key,
+  const SummaryConclusionArgs({
     required this.baseData,
     required this.tipoInspeccion,
     required this.modulesData,
@@ -24,6 +23,15 @@ class SummaryConclusionPage extends ConsumerStatefulWidget {
     required this.totalScore,
     required this.maxScore,
     required this.aprobado,
+  });
+}
+
+class SummaryConclusionPage extends ConsumerStatefulWidget {
+  final SummaryConclusionArgs data;
+
+  const SummaryConclusionPage({
+    super.key,
+    required this.data,
   });
 
   @override
@@ -36,28 +44,29 @@ class _SummaryConclusionPageState
   bool _saving = false;
 
   Future<void> _guardarInspeccion() async {
+    final data = widget.data;
     setState(() => _saving = true);
     try {
       final supabase = ref.read(supabaseProvider);
       final user = supabase.auth.currentUser!;
-      final aprobado = widget.aprobado;
+      final aprobado = data.aprobado;
 
       final payload = {
         'inspector_id': user.id,
-        'radicado': widget.baseData['radicado'],
-        'fecha_inspeccion': widget.baseData['fecha_inspeccion'],
-        'nombre_comercial': widget.baseData['nombre_comercial'],
-        'representante_legal': widget.baseData['representante_legal'],
-        'direccion_rut': widget.baseData['direccion_rut'],
-        'celular_rut': widget.baseData['celular_rut'],
-        'acompanante': widget.baseData['acompanante'] ?? '',
-        'foto_fachada_url': widget.baseData['foto_fachada_url'],
-        'visita_anterior': widget.baseData['visita_anterior'],
-        'tipo_inspeccion': widget.tipoInspeccion,
-        'modules': widget.modulesData,
+        'radicado': data.baseData['radicado'],
+        'fecha_inspeccion': data.baseData['fecha_inspeccion'],
+        'nombre_comercial': data.baseData['nombre_comercial'],
+        'representante_legal': data.baseData['representante_legal'],
+        'direccion_rut': data.baseData['direccion_rut'],
+        'celular_rut': data.baseData['celular_rut'],
+        'acompanante': data.baseData['acompanante'] ?? '',
+        'foto_fachada_url': data.baseData['foto_fachada_url'],
+        'visita_anterior': data.baseData['visita_anterior'],
+        'tipo_inspeccion': data.tipoInspeccion,
+        'modules': data.modules,
         'resultado': {
-          'puntaje_total': widget.totalScore,
-          'puntaje_maximo': widget.maxScore,
+          'puntaje_total': data.totalScore,
+          'puntaje_maximo': data.maxScore,
           'aprobado': aprobado,
         },
       };
@@ -80,12 +89,12 @@ class _SummaryConclusionPageState
   Future<void> _generarPdf() async {
     try {
       final bytes = await PdfService.buildInspectionPdf(
-        base: widget.baseData,
-        modules: widget.modulesData,
-        totalScore: widget.totalScore,
-        passingScore: widget.passingScore,
-        maxScore: widget.maxScore,
-        aprobado: widget.aprobado,
+        base: widget.data.baseData,
+        modules: widget.data.modules,
+        totalScore: widget.data.totalScore,
+        passingScore: widget.data.passingScore,
+        maxScore: widget.data.maxScore,
+        aprobado: widget.data.aprobado,
       );
       await Printing.sharePdf(
           bytes: bytes, filename: 'informe_inspeccion_cbvsa.pdf');
@@ -120,8 +129,9 @@ class _SummaryConclusionPageState
 
   @override
   Widget build(BuildContext context) {
-    final nombre = (widget.baseData['nombre_comercial'] ?? '') as String;
-    final direccion = (widget.baseData['direccion_rut'] ?? '') as String;
+    final data = widget.data;
+    final nombre = (data.baseData['nombre_comercial'] ?? '') as String;
+    final direccion = (data.baseData['direccion_rut'] ?? '') as String;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Resumen y Conclusión (Hoja 3)')),
@@ -130,14 +140,13 @@ class _SummaryConclusionPageState
         children: [
           // ✅ PUNTAJE Y ESTADO
           Text(
-            'Puntaje total: ${widget.totalScore} / Mínimo requerido: ${widget.passingScore}',
+            'Puntaje total: ${data.totalScore} / Mínimo requerido: ${data.passingScore}',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 8),
           Chip(
-            label: Text(widget.aprobado ? 'APROBADO ✅' : 'NO APROBADO ❌'),
-            backgroundColor:
-                widget.aprobado ? Colors.green[100] : Colors.red[100],
+            label: Text(data.aprobado ? 'APROBADO ✅' : 'NO APROBADO ❌'),
+            backgroundColor: data.aprobado ? Colors.green[100] : Colors.red[100],
           ),
           const SizedBox(height: 16),
 
@@ -147,7 +156,7 @@ class _SummaryConclusionPageState
                     fontWeight: FontWeight.bold,
                   )),
           const SizedBox(height: 8),
-          Text(_conclusionTexto(widget.aprobado, nombre, direccion)),
+          Text(_conclusionTexto(data.aprobado, nombre, direccion)),
           const SizedBox(height: 16),
 
           // ✅ VIGENCIA
@@ -156,7 +165,7 @@ class _SummaryConclusionPageState
                     fontWeight: FontWeight.bold,
                   )),
           const SizedBox(height: 8),
-          Text(_vigenciaTexto(widget.aprobado)),
+          Text(_vigenciaTexto(data.aprobado)),
           const SizedBox(height: 24),
 
           // ✅ RESUMEN DE MÓDULOS Y PREGUNTAS
@@ -166,7 +175,7 @@ class _SummaryConclusionPageState
                   )),
           const SizedBox(height: 10),
 
-          for (final module in widget.modulesData) ...[
+          for (final module in data.modules) ...[
             Card(
               margin: const EdgeInsets.only(bottom: 12),
               child: Padding(
@@ -195,7 +204,7 @@ class _SummaryConclusionPageState
                                     : 'No aplica',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                        ],
+                      ],
                       ),
                       Text('Puntaje: ${item['puntaje']}'),
                       if ((item['observacion'] ?? '').toString().isNotEmpty)
