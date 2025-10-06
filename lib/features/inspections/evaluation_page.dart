@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../core/templates.dart';
+import '../../core/module_templates.dart';
 
 /// Dropdown a prueba de crashes:
 class SafeDropdownFormField<T> extends StatelessWidget {

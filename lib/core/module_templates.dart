@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
-
 /// Tipo de respuesta
-enum AnswerType { yn }
+enum AnswerType { yn, abc }
 
 /// Modelo de una pregunta
 class ModuleQuestion {
@@ -9,13 +7,27 @@ class ModuleQuestion {
   final String text;
   final AnswerType answerType;
   final int points;
+  final Map<String, int>? scoreMap;
 
   const ModuleQuestion({
     required this.id,
     required this.text,
     required this.answerType,
     required this.points,
+    this.scoreMap,
   });
+
+  int get maxAchievablePoints {
+    if (answerType == AnswerType.yn) {
+      return points;
+    }
+    final map = scoreMap ?? const {'A': 10, 'B': 5, 'C': 0};
+    var max = 0;
+    for (final value in map.values) {
+      if (value > max) max = value;
+    }
+    return max;
+  }
 }
 
 /// Modelo de un módulo (grupo de preguntas)
@@ -54,7 +66,8 @@ ModuleTemplateSet _makeTemplate({
 }) {
   final total = modules.fold<int>(
     0,
-    (sum, m) => sum + m.items.fold<int>(0, (s, q) => s + q.points),
+    (sum, m) =>
+        sum + m.items.fold<int>(0, (s, q) => s + q.maxAchievablePoints),
   );
   final passing = (total * 0.7).round();
   return ModuleTemplateSet(
@@ -296,11 +309,13 @@ ModuleTemplateSet templatesByType(String type) {
   return _templatesMap[type] ?? comercioPequenoTemplate;
 }
 
-String normalizeTemplateCode(String value) {
-  final v = value.toLowerCase().replaceAll(' ', '_');
-  if (v.contains('grande')) return 'comercio_grande';
-  if (v.contains('peque')) return 'comercio_pequeno';
-  if (v.contains('estacion')) return 'estacion_servicio';
-  if (v.contains('indus')) return 'industria';
+String normalizeTemplateCode(String? value) {
+  final raw = (value ?? '').trim().toLowerCase();
+  if (raw.isEmpty) return 'comercio_pequeno';
+  final normalized = raw.replaceAll(RegExp(r'[^a-z0-9]+'), '_');
+  if (normalized.contains('grande')) return 'comercio_grande';
+  if (normalized.contains('peque')) return 'comercio_pequeno';
+  if (normalized.contains('estacion')) return 'estacion_servicio';
+  if (normalized.contains('indus')) return 'industria';
   return 'comercio_pequeno';
 }
