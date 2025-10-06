@@ -6,7 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import '../../core/providers.dart';
 import '../../core/storage.dart';
 import 'summary_conclusion_page.dart';
-import '../../core/templates.dart';
+import '../../core/module_templates.dart';
 
 class ModulesEvaluationPage extends ConsumerStatefulWidget {
   final Map<String, dynamic> baseData;
