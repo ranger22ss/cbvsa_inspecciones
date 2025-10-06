@@ -1,162 +1,306 @@
-import 'templates.dart';
+import 'package:flutter/material.dart';
 
-class AnswerType {
-  static const yn = 'yn';   // Sí / No / N/A -> suma puntos solo con "sí"
-  static const abc = 'abc'; // A / B / C     -> usa scoreMap
-}
+/// Tipo de respuesta
+enum AnswerType { yn }
 
+/// Modelo de una pregunta
 class ModuleQuestion {
   final String id;
   final String text;
+  final AnswerType answerType;
   final int points;
-  final String answerType;
-  final Map<String, int>? scoreMap;
+
   const ModuleQuestion({
     required this.id,
     required this.text,
-    required this.points,
     required this.answerType,
-    this.scoreMap,
+    required this.points,
   });
 }
 
-class ModuleDef {
+/// Modelo de un módulo (grupo de preguntas)
+class ModuleTemplate {
   final String title;
   final List<ModuleQuestion> items;
-  const ModuleDef({required this.title, required this.items});
+  const ModuleTemplate({required this.title, required this.items});
 }
 
+/// Set completo por tipo de inspección
 class ModuleTemplateSet {
-  final List<ModuleDef> modules;
+  final String code;
+  final String name;
   final int passingScore;
-  const ModuleTemplateSet({required this.modules, required this.passingScore});
-int get maxScore {
-  int total = 0;
-  for (final module in modules) {
-    for (final q in module.items) {
-      if (q.answerType == AnswerType.yn) {
-        total += q.points;
-      } else if (q.scoreMap != null) {
-        // toma el valor más alto del mapa de puntajes (A/B/C)
-        total += q.scoreMap!.values.reduce((a, b) => a > b ? a : b);
-      }
-    }
-  }
-  return total;
-}
+  final int maxScore;
+  final List<ModuleTemplate> modules;
+
+  const ModuleTemplateSet({
+    required this.code,
+    required this.name,
+    required this.passingScore,
+    required this.maxScore,
+    required this.modules,
+  });
 }
 
-final comercioPequeno = ModuleTemplateSet(
-  passingScore: 70,
-  modules: [
-    ModuleDef(
-      title: 'Módulo No. 1. Sistemas eléctricos',
-      items: [
-        ModuleQuestion(
-          id: 'elec_tablero',
-          text: '¿Tablero con protecciones y señalización?',
-          points: 10,
-          answerType: AnswerType.yn,
-        ),
-        ModuleQuestion(
-          id: 'elec_cableado',
-          text: 'Estado del cableado (A excelente / B aceptable / C deficiente)',
-          points: 10,
-          answerType: AnswerType.abc,
-          scoreMap: {'A': 10, 'B': 5, 'C': 0},
-        ),
-      ],
-    ),
-    ModuleDef(
-      title: 'Módulo No. 2. Vías de evacuación',
-      items: [
-        ModuleQuestion(
-          id: 'vias_salida',
-          text: '¿Salida de emergencia libre y señalizada?',
-          points: 20,
-          answerType: AnswerType.yn,
-        ),
-        ModuleQuestion(
-          id: 'rutas_senial',
-          text: 'Señalización de rutas (A completa / B parcial / C inexistente)',
-          points: 10,
-          answerType: AnswerType.abc,
-          scoreMap: {'A': 10, 'B': 5, 'C': 0},
-        ),
-      ],
-    ),
-  ],
-);
+// =============================================================
+// 🔥 PLANTILLAS ACTUALIZADAS (según las imágenes que enviaste)
+// =============================================================
 
-final comercioGrande = ModuleTemplateSet(
-  passingScore: 80,
+// Helper para crear plantilla con puntaje total y 70% mínimo
+ModuleTemplateSet _makeTemplate({
+  required String code,
+  required String name,
+  required List<ModuleTemplate> modules,
+}) {
+  final total = modules.fold<int>(
+    0,
+    (sum, m) => sum + m.items.fold<int>(0, (s, q) => s + q.points),
+  );
+  final passing = (total * 0.7).round();
+  return ModuleTemplateSet(
+    code: code,
+    name: name,
+    modules: modules,
+    passingScore: passing,
+    maxScore: total,
+  );
+}
+
+// =============================================================
+// 🏪 COMERCIO PEQUEÑO
+// =============================================================
+final comercioPequenoTemplate = _makeTemplate(
+  code: 'comercio_pequeno',
+  name: 'Comercio pequeño',
   modules: [
-    ModuleDef(
-      title: 'Módulo No. 1. Protección activa',
+    ModuleTemplate(
+      title: 'Evaluación general',
       items: [
         ModuleQuestion(
           id: 'extintores',
-          text: '¿Extintores suficientes, señalizados y con mantenimiento?',
-          points: 15,
+          text: '¿Cuenta con la cantidad adecuada de extintores?',
           answerType: AnswerType.yn,
+          points: 10,
         ),
         ModuleQuestion(
-          id: 'alarmas',
-          text: 'Sistema de alarma (A operativo / B intermitente / C inoperativo)',
-          points: 15,
-          answerType: AnswerType.abc,
-          scoreMap: {'A': 15, 'B': 8, 'C': 0},
+          id: 'recarga',
+          text: '¿Los extintores están recargados y con mantenimiento vigente?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'botiquin',
+          text: '¿Cuenta con botiquín de primeros auxilios completo?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'senalizacion',
+          text: '¿Tiene señalizaciones visibles y adecuadas?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'instalaciones',
+          text: '¿Las instalaciones eléctricas están en buen estado?',
+          answerType: AnswerType.yn,
+          points: 10,
         ),
       ],
     ),
   ],
 );
 
-final estacionServicio = ModuleTemplateSet(
-  passingScore: 85,
+// =============================================================
+// 🏢 COMERCIO GRANDE
+// =============================================================
+final comercioGrandeTemplate = _makeTemplate(
+  code: 'comercio_grande',
+  name: 'Comercio grande',
   modules: [
-    ModuleDef(
-      title: 'Módulo No. 1. Seguridad en despacho',
+    ModuleTemplate(
+      title: 'Protección y seguridad general',
       items: [
         ModuleQuestion(
-          id: 'antiderrames',
-          text: '¿Kit antiderrames disponible y completo?',
-          points: 20,
+          id: 'salidas',
+          text: '¿Las salidas de emergencia están señalizadas y libres?',
           answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'extintores',
+          text: '¿Los extintores cumplen con las normas vigentes?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'plan_emergencia',
+          text: '¿Cuenta con plan de emergencia y evacuación actualizado?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'botiquin',
+          text: '¿Dispone de botiquín completo y accesible?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'senales',
+          text: '¿Señales de seguridad correctamente instaladas?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'instalaciones',
+          text: '¿Instalaciones eléctricas seguras?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'brigada',
+          text: '¿Existe brigada de emergencia entrenada?',
+          answerType: AnswerType.yn,
+          points: 10,
         ),
       ],
     ),
   ],
 );
 
-final industria = ModuleTemplateSet(
-  passingScore: 90,
+// =============================================================
+// ⛽ ESTACIÓN DE SERVICIO
+// =============================================================
+final estacionServicioTemplate = _makeTemplate(
+  code: 'estacion_servicio',
+  name: 'Estación de servicio',
   modules: [
-    ModuleDef(
-      title: 'Módulo No. 1. Maquinaria',
+    ModuleTemplate(
+      title: 'Seguridad contra incendios',
       items: [
         ModuleQuestion(
-          id: 'guardas',
-          text: '¿Guardas y paros de emergencia en máquinas?',
-          points: 20,
+          id: 'plan_emergencia',
+          text: '¿Cuenta con plan de emergencia completo?',
           answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'tuberias',
+          text: '¿Las tuberías se encuentran en buen estado sin fugas?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'tanques',
+          text: '¿Los tanques de almacenamiento cumplen con medidas reglamentarias?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'canaletas',
+          text: '¿Las canaletas antiderrames están limpias y funcionales?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'extintores',
+          text: '¿Dispone de extintores adecuados y vigentes?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'botiquin',
+          text: '¿Cuenta con botiquín completo?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'senalizacion',
+          text: '¿Cuenta con señalización visible?',
+          answerType: AnswerType.yn,
+          points: 10,
         ),
       ],
     ),
   ],
 );
 
-ModuleTemplateSet templatesByType(String? tipo) {
-  final normalized = normalizeTemplateCode(tipo);
-  switch (normalized) {
-    case 'comercio_grande':
-      return comercioGrande;
-    case 'estacion_servicio':
-      return estacionServicio;
-    case 'industria':
-      return industria;
-    case 'comercio_pequeno':
-    default:
-      return comercioPequeno;
-  }
+// =============================================================
+// 🏭 INDUSTRIA
+// =============================================================
+final industriaTemplate = _makeTemplate(
+  code: 'industria',
+  name: 'Industria',
+  modules: [
+    ModuleTemplate(
+      title: 'Seguridad industrial y prevención',
+      items: [
+        ModuleQuestion(
+          id: 'sistema_alarma',
+          text: '¿Cuenta con sistema de alarma contra incendios funcional?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'hidrantes',
+          text: '¿Tiene hidrantes operativos y accesibles?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'extintores',
+          text: '¿Extintores suficientes y en buen estado?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'rutas_evacuacion',
+          text: '¿Rutas de evacuación señalizadas y libres?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'equipos_proteccion',
+          text: '¿El personal cuenta con equipos de protección personal?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'plan_emergencia',
+          text: '¿Tiene plan de emergencia vigente y aprobado?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'capacitacion',
+          text: '¿El personal ha recibido capacitación en manejo de emergencias?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+      ],
+    ),
+  ],
+);
+
+// =============================================================
+// MAPEO GENERAL
+// =============================================================
+final Map<String, ModuleTemplateSet> _templatesMap = {
+  'comercio_pequeno': comercioPequenoTemplate,
+  'comercio_grande': comercioGrandeTemplate,
+  'estacion_servicio': estacionServicioTemplate,
+  'industria': industriaTemplate,
+};
+
+ModuleTemplateSet templatesByType(String type) {
+  return _templatesMap[type] ?? comercioPequenoTemplate;
+}
+
+String normalizeTemplateCode(String value) {
+  final v = value.toLowerCase().replaceAll(' ', '_');
+  if (v.contains('grande')) return 'comercio_grande';
+  if (v.contains('peque')) return 'comercio_pequeno';
+  if (v.contains('estacion')) return 'estacion_servicio';
+  if (v.contains('indus')) return 'industria';
+  return 'comercio_pequeno';
 }

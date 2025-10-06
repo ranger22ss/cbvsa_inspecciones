@@ -5,13 +5,12 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/providers.dart';
 import '../../core/storage.dart';
-import '../../core/module_templates.dart'; // 👈 AQUÍ ESTÁN ModuleTemplateSet, AnswerType, ModuleQuestion
 import 'summary_conclusion_page.dart';
 import '../../core/templates.dart';
 
 class ModulesEvaluationPage extends ConsumerStatefulWidget {
-  final Map<String, dynamic> baseData;   // de Hoja 1
-  final String tipoInspeccion;           // de Hoja 1
+  final Map<String, dynamic> baseData;
+  final String tipoInspeccion;
   const ModulesEvaluationPage({
     super.key,
     required this.baseData,
@@ -27,8 +26,9 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
   late final String _tipoNormalizado;
   late final ModuleTemplateSet _tpl;
   final _picker = ImagePicker();
-  final Map<String, String> _answers = {}; 
-  final Map<String, List<Map<String, String>>> _photos = {}; 
+  final Map<String, String> _answers = {};
+  final Map<String, String> _observations = {}; // 👈 Observaciones individuales
+  final Map<String, List<Map<String, String>>> _photos = {};
   int _score = 0;
 
   @override
@@ -45,12 +45,9 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
       final mod = _tpl.modules[m];
       for (final q in mod.items) {
         final key = '${m}_${q.id}';
-        final a = _answers[key];
+        final a = _answers[key] ?? 'no';
         if (q.answerType == AnswerType.yn) {
           if (a == 'yes') s += q.points;
-        } else {
-          final mp = q.scoreMap ?? const {'A': 10, 'B': 5, 'C': 0};
-          s += mp[a] ?? 0;
         }
       }
     }
@@ -110,37 +107,20 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
   }
 
   Widget _answerField(ModuleQuestion q, String key) {
-    if (q.answerType == AnswerType.yn) {
-      final val = _answers[key] ?? 'no';
-      return DropdownButtonFormField<String>(
-        value: val,
-        items: [
-          const DropdownMenuItem(value: 'yes', child: Text('Sí / Cumple')),
-          const DropdownMenuItem(value: 'no', child: Text('No cumple')),
-          const DropdownMenuItem(value: 'na', child: Text('No aplica')),
-        ],
-        onChanged: (v) {
-          _answers[key] = v ?? 'no';
-          _recalc();
-        },
-        decoration: const InputDecoration(labelText: 'Resultado'),
-      );
-    } else {
-      final val = _answers[key] ?? 'C';
-      return DropdownButtonFormField<String>(
-        value: val,
-        items: [
-          const DropdownMenuItem(value: 'A', child: Text('A')),
-          const DropdownMenuItem(value: 'B', child: Text('B')),
-          const DropdownMenuItem(value: 'C', child: Text('C')),
-        ],
-        onChanged: (v) {
-          _answers[key] = v ?? 'C';
-          _recalc();
-        },
-        decoration: const InputDecoration(labelText: 'Resultado (A/B/C)'),
-      );
-    }
+    final val = _answers[key] ?? 'no';
+    return DropdownButtonFormField<String>(
+      value: val,
+      items: const [
+        DropdownMenuItem(value: 'yes', child: Text('Sí / Cumple')),
+        DropdownMenuItem(value: 'no', child: Text('No cumple')),
+        DropdownMenuItem(value: 'na', child: Text('No aplica')),
+      ],
+      onChanged: (v) {
+        _answers[key] = v ?? 'no';
+        _recalc();
+      },
+      decoration: const InputDecoration(labelText: 'Resultado'),
+    );
   }
 
   Widget _photosBlock(String key) {
@@ -153,6 +133,7 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(8),
@@ -161,9 +142,9 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
               const SizedBox(width: 8),
               Expanded(
                 child: TextFormField(
-                  initialValue: obs, // 👈 se usa initialValue, no value
+                  initialValue: obs,
                   onChanged: (v) => list[i]['observacion'] = v,
-                  decoration: const InputDecoration(labelText: 'Observación (opcional)'),
+                  decoration: const InputDecoration(labelText: 'Observación de foto'),
                   maxLines: 2,
                 ),
               ),
@@ -191,25 +172,24 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
       final items = <Map<String, dynamic>>[];
       for (final q in mod.items) {
         final key = '${m}_${q.id}';
-        final a = _answers[key];
-        int pts = 0;
-        if (q.answerType == AnswerType.yn) {
-          if (a == 'yes') pts = q.points;
-        } else {
-          final map = q.scoreMap ?? const {'A': 10, 'B': 5, 'C': 0};
-          pts = map[a] ?? 0;
-        }
+        final a = _answers[key] ?? 'no';
+        final obs = _observations[key] ?? '';
+        int pts = (a == 'yes') ? q.points : 0;
+
         final fotos = (_photos[key] ?? const <Map<String, String>>[])
             .map((e) => {
                   'url': e['url']!,
-                  if ((e['observacion'] ?? '').isNotEmpty) 'observacion': e['observacion']
+                  if ((e['observacion'] ?? '').isNotEmpty)
+                    'observacion': e['observacion']
                 })
             .toList();
+
         items.add({
           'pregunta_id': q.id,
           'pregunta_texto': q.text,
-          'respuesta': a ?? (q.answerType == AnswerType.yn ? 'no' : 'C'),
+          'respuesta': a,
           'puntaje': pts,
+          'observacion': obs,
           'fotos': fotos,
         });
       }
@@ -224,7 +204,6 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
         tipoInspeccion: _tipoNormalizado,
         modules: modulesJson,
         passingScore: _tpl.passingScore,
-        maxScore: _tpl.maxScore,
         totalScore: _score,
         aprobado: aprobado,
       ),
@@ -258,6 +237,15 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
                       const SizedBox(height: 6),
                       _answerField(q, '${m}_${q.id}'),
                       const SizedBox(height: 6),
+                      TextFormField(
+                        initialValue: _observations['${m}_${q.id}'] ?? '',
+                        decoration: const InputDecoration(
+                          labelText: 'Observación general (opcional)',
+                        ),
+                        maxLines: 2,
+                        onChanged: (v) => _observations['${m}_${q.id}'] = v,
+                      ),
+                      const SizedBox(height: 6),
                       Row(
                         children: [
                           OutlinedButton.icon(
@@ -266,9 +254,7 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
                             label: const Text('Agregar foto'),
                           ),
                           const SizedBox(width: 8),
-                          Text(q.answerType == AnswerType.yn
-                              ? '+${q.points} pts si cumple'
-                              : 'Puntaje según A/B/C'),
+                          Text('+${q.points} pts si cumple'),
                         ],
                       ),
                       const SizedBox(height: 6),
