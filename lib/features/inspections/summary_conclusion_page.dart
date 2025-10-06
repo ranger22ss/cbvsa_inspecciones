@@ -9,6 +9,7 @@ class SummaryConclusionPage extends ConsumerStatefulWidget {
   final String tipoInspeccion;
   final List<Map<String, dynamic>> modules;
   final int passingScore;
+  final int maxScore;
   final int totalScore;
   final int maxScore;
   final bool aprobado;
@@ -19,6 +20,7 @@ class SummaryConclusionPage extends ConsumerStatefulWidget {
     required this.tipoInspeccion,
     required this.modules,
     required this.passingScore,
+    required this.maxScore,
     required this.totalScore,
     required this.maxScore,
     required this.aprobado,
@@ -55,6 +57,7 @@ class _SummaryConclusionPageState
         'modules': widget.modules,
         'resultado': {
           'puntaje_total': widget.totalScore,
+          'puntaje_maximo': widget.maxScore,
           'aprobado': aprobado,
         },
       };
@@ -81,6 +84,7 @@ class _SummaryConclusionPageState
         modules: widget.modules,
         totalScore: widget.totalScore,
         passingScore: widget.passingScore,
+        maxScore: widget.maxScore,
         aprobado: widget.aprobado,
       );
       await Printing.sharePdf(
