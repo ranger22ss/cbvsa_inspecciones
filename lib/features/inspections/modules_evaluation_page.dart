@@ -92,6 +92,9 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
         userId: user.id,
         questionId: key.replaceAll('_', '/'),
       );
+
+      if (!mounted) return;
+
       final list = _photos[key] ?? <Map<String, String>>[];
       list.add({'url': url, 'observacion': ''});
       setState(() => _photos[key] = list);
@@ -202,7 +205,7 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
       builder: (_) => SummaryConclusionPage(
         baseData: widget.baseData,
         tipoInspeccion: _tipoNormalizado,
-        modules: modulesJson,
+        modulesData: modulesJson,
         passingScore: _tpl.passingScore,
         maxScore: _tpl.maxScore,
         totalScore: _score,
