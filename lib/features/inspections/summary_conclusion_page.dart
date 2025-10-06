@@ -86,12 +86,13 @@ class _SummaryConclusionPageState
 
   Future<void> _generarPdf() async {
     try {
+      var maxScore = null;
       final bytes = await PdfService.buildInspectionPdf(
         base: widget.data.baseData,
         modules: widget.data.modules,
         totalScore: widget.data.totalScore,
         passingScore: widget.data.passingScore,
-        aprobado: widget.data.aprobado,
+        aprobado: widget.data.aprobado, maxScore: maxScore,
       );
       await Printing.sharePdf(
         bytes: bytes,
