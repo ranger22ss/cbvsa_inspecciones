@@ -7,7 +7,7 @@ import '../../core/providers.dart';
 class SummaryConclusionPage extends ConsumerStatefulWidget {
   final Map<String, dynamic> baseData;
   final String tipoInspeccion;
-  final List<Map<String, dynamic>> modules;
+  final List<Map<String, dynamic>> modulesData;
   final int passingScore;
   final int maxScore;
   final int totalScore;
@@ -18,7 +18,7 @@ class SummaryConclusionPage extends ConsumerStatefulWidget {
     super.key,
     required this.baseData,
     required this.tipoInspeccion,
-    required this.modules,
+    required this.modulesData,
     required this.passingScore,
     required this.maxScore,
     required this.totalScore,
@@ -54,7 +54,7 @@ class _SummaryConclusionPageState
         'foto_fachada_url': widget.baseData['foto_fachada_url'],
         'visita_anterior': widget.baseData['visita_anterior'],
         'tipo_inspeccion': widget.tipoInspeccion,
-        'modules': widget.modules,
+        'modules': widget.modulesData,
         'resultado': {
           'puntaje_total': widget.totalScore,
           'puntaje_maximo': widget.maxScore,
@@ -81,7 +81,7 @@ class _SummaryConclusionPageState
     try {
       final bytes = await PdfService.buildInspectionPdf(
         base: widget.baseData,
-        modules: widget.modules,
+        modules: widget.modulesData,
         totalScore: widget.totalScore,
         passingScore: widget.passingScore,
         maxScore: widget.maxScore,
@@ -166,7 +166,7 @@ class _SummaryConclusionPageState
                   )),
           const SizedBox(height: 10),
 
-          for (final module in widget.modules) ...[
+          for (final module in widget.modulesData) ...[
             Card(
               margin: const EdgeInsets.only(bottom: 12),
               child: Padding(

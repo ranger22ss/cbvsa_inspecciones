@@ -86,7 +86,7 @@ final comercioPequenoTemplate = _makeTemplate(
   code: 'comercio_pequeno',
   name: 'Comercio pequeño',
   modules: [
-    ModuleTemplate(
+    const ModuleTemplate(
       title: 'Evaluación general',
       items: [
         ModuleQuestion(
@@ -131,7 +131,7 @@ final comercioGrandeTemplate = _makeTemplate(
   code: 'comercio_grande',
   name: 'Comercio grande',
   modules: [
-    ModuleTemplate(
+    const ModuleTemplate(
       title: 'Protección y seguridad general',
       items: [
         ModuleQuestion(

@@ -726,10 +726,10 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
           value: _subsanadasPrevias,
           decoration: const InputDecoration(
               labelText: '¿Se subsanaron observaciones previas?'),
-          items: [
-            const DropdownMenuItem<bool>(
+          items: const [
+            DropdownMenuItem<bool>(
                 value: true, child: Text('Sí, subsanadas')),
-            const DropdownMenuItem<bool>(
+            DropdownMenuItem<bool>(
                 value: false, child: Text('No se subsanaron')),
           ],
           onChanged: (bool? value) =>
