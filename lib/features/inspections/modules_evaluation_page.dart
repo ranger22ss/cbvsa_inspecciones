@@ -204,6 +204,7 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
         tipoInspeccion: _tipoNormalizado,
         modules: modulesJson,
         passingScore: _tpl.passingScore,
+        maxScore: _tpl.maxScore,
         totalScore: _score,
         aprobado: aprobado,
       ),
