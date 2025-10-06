@@ -35,16 +35,16 @@ class AppBranding {
   ///
   /// Si agregas un archivo en `assets/images/app_logo.png` y lo declaras en
   /// `pubspec.yaml`, la pantalla "Acerca de" lo usará automáticamente.
-  static const String? logoAssetPath = null;
+  static const String? logoAssetPath = 'assets/images/app_logo.png';
 
   /// Construye el widget del logo que se usa en la pantalla "Acerca de".
   static Widget buildAboutLogo(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    if (logoAssetPath != "../assets/images/app_logo.png") {
+    if (logoAssetPath != null) {
       return CircleAvatar(
         radius: 48,
         backgroundColor: scheme.primaryContainer,
-        backgroundImage: AssetImage("../assets/images/app_logo.png"),
+        backgroundImage: AssetImage(logoAssetPath!),
         onBackgroundImageError: (_, __) {},
       );
     }
