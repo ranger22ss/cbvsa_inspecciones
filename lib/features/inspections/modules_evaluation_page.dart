@@ -210,7 +210,7 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
           passingScore: _tpl.passingScore,
           maxScore: _tpl.maxScore,
           totalScore: _score,
-          aprobado: aprobado, modulesData: [],
+          aprobado: aprobado,
         ),
       ),
     ));

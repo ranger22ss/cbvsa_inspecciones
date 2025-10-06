@@ -7,22 +7,20 @@ import '../../core/providers.dart';
 class SummaryConclusionArgs {
   final Map<String, dynamic> baseData;
   final String tipoInspeccion;
-  final List<Map<String, dynamic>> modulesData;
+  final List<Map<String, dynamic>> modules;
   final int passingScore;
   final int maxScore;
   final int totalScore;
-  final int maxScore;
   final bool aprobado;
 
   const SummaryConclusionArgs({
     required this.baseData,
     required this.tipoInspeccion,
-    required this.modulesData,
+    required this.modules,
     required this.passingScore,
     required this.maxScore,
     required this.totalScore,
-    required this.maxScore,
-    required this.aprobado, required List<Map<String, dynamic>> modules,
+    required this.aprobado,
   });
 }
 
@@ -93,11 +91,12 @@ class _SummaryConclusionPageState
         modules: widget.data.modules,
         totalScore: widget.data.totalScore,
         passingScore: widget.data.passingScore,
-        maxScore: widget.data.maxScore,
         aprobado: widget.data.aprobado,
       );
       await Printing.sharePdf(
-          bytes: bytes, filename: 'informe_inspeccion_cbvsa.pdf');
+        bytes: bytes,
+        filename: 'informe_inspeccion_cbvsa.pdf',
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context)
@@ -146,7 +145,8 @@ class _SummaryConclusionPageState
           const SizedBox(height: 8),
           Chip(
             label: Text(data.aprobado ? 'APROBADO ✅' : 'NO APROBADO ❌'),
-            backgroundColor: data.aprobado ? Colors.green[100] : Colors.red[100],
+            backgroundColor:
+                data.aprobado ? Colors.green[100] : Colors.red[100],
           ),
           const SizedBox(height: 16),
 
@@ -204,7 +204,7 @@ class _SummaryConclusionPageState
                                     : 'No aplica',
                             style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
-                      ],
+                        ],
                       ),
                       Text('Puntaje: ${item['puntaje']}'),
                       if ((item['observacion'] ?? '').toString().isNotEmpty)
