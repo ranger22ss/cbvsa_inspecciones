@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Si tienes un theme propio, mantenlo; si no, puedes borrar esta import y usar el ThemeData simple
 import 'core/app_theme.dart';
+import 'core/branding/app_branding.dart';
 
 // Importa el router que te pasé (con goRouterProvider)
 import 'core/app_router.dart';
@@ -31,7 +32,7 @@ class MyApp extends ConsumerWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routerConfig: router,
-      title: 'CBVSA Inspecciones',
+      title: AppBranding.appName,
       // Si tienes buildAppTheme, úsalo; si no, usa el ThemeData simple.
       theme: buildAppTheme(Brightness.light),
       darkTheme: buildAppTheme(Brightness.dark),

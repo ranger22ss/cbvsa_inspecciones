@@ -8,6 +8,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../features/auth/login_page.dart';
 import '../features/home/home_page.dart';
 import '../features/profile/profile_page.dart';
+import '../features/about/about_page.dart';
 import '../features/inspections/inspections_list_page.dart';
 import '../features/inspections/new_inspection_wizard.dart';
 import '../features/inspections/summary_conclusion_page.dart';
@@ -22,6 +23,7 @@ class Routes {
   static const String inspectionsStart = 'inspections_start';
   static const String inspectionsNew = 'inspections_new';
   static const String inspectionsEdit = 'inspections_edit';
+  static const String about = 'about';
 
   // ignore: constant_identifier_names
   static const String pagina_aval_anual = 'pagina_aval_anual';
@@ -76,6 +78,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/profile',
         name: Routes.profile,
         builder: (context, state) => const ProfilePage(),
+      ),
+      GoRoute(
+        path: '/about',
+        name: Routes.about,
+        builder: (context, state) => const AboutPage(),
       ),
       GoRoute(
         path: '/inspections',

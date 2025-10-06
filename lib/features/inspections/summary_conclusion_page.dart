@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
+
+import '../../core/models.dart';
 import '../../core/pdf_service.dart';
 import '../../core/providers.dart';
 
@@ -42,12 +44,40 @@ class _SummaryConclusionPageState
   bool _saving = false;
 
   Future<void> _guardarInspeccion() async {
+    if (widget.data.modules.isEmpty) {
+      final scheme = Theme.of(context).colorScheme;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: scheme.error,
+          content: const Text('⚠️ Falta llenar todos los campos obligatorios'),
+        ),
+      );
+      return;
+    }
+
     final data = widget.data;
     setState(() => _saving = true);
     try {
       final supabase = ref.read(supabaseProvider);
       final user = supabase.auth.currentUser!;
       final aprobado = data.aprobado;
+      final inspector = await ref.read(currentUserProvider.future);
+
+      Map<String, dynamic> buildInspectorPayload(AppUser? profile) {
+        if (profile == null) {
+          return {
+            'uid': user.id,
+            'nombre': user.email ?? '',
+          };
+        }
+        return {
+          'uid': profile.id,
+          'nombre': profile.fullName,
+          'documento': profile.nationalId,
+          'rango': profile.rank,
+          'correo': profile.email,
+        };
+      }
 
       final payload = {
         'inspector_id': user.id,
@@ -65,20 +95,29 @@ class _SummaryConclusionPageState
         'resultado': {
           'puntaje_total': data.totalScore,
           'puntaje_maximo': data.maxScore,
+          'puntaje_minimo': data.passingScore,
           'aprobado': aprobado,
         },
+        'inspector': buildInspectorPayload(inspector),
       };
 
       await supabase.from('inspections').insert(payload);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Inspección guardada ✅')),
+        SnackBar(
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          content: const Text('Inspección guardada ✅'),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error al guardar: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Theme.of(context).colorScheme.error,
+          content: Text('Error al guardar: $e'),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -86,13 +125,13 @@ class _SummaryConclusionPageState
 
   Future<void> _generarPdf() async {
     try {
-      var maxScore = null;
       final bytes = await PdfService.buildInspectionPdf(
         base: widget.data.baseData,
         modules: widget.data.modules,
         totalScore: widget.data.totalScore,
         passingScore: widget.data.passingScore,
-        aprobado: widget.data.aprobado, maxScore: maxScore,
+        maxScore: widget.data.maxScore,
+        aprobado: widget.data.aprobado,
       );
       await Printing.sharePdf(
         bytes: bytes,
@@ -100,8 +139,12 @@ class _SummaryConclusionPageState
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Error generando PDF: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Theme.of(context).colorScheme.error,
+          content: Text('Error generando PDF: $e'),
+        ),
+      );
     }
   }
 
@@ -132,6 +175,7 @@ class _SummaryConclusionPageState
     final data = widget.data;
     final nombre = (data.baseData['nombre_comercial'] ?? '') as String;
     final direccion = (data.baseData['direccion_rut'] ?? '') as String;
+    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Resumen y Conclusión (Hoja 3)')),
@@ -146,8 +190,15 @@ class _SummaryConclusionPageState
           const SizedBox(height: 8),
           Chip(
             label: Text(data.aprobado ? 'APROBADO ✅' : 'NO APROBADO ❌'),
-            backgroundColor:
-                data.aprobado ? Colors.green[100] : Colors.red[100],
+            backgroundColor: data.aprobado
+                ? scheme.primaryContainer
+                : scheme.errorContainer,
+            labelStyle: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: data.aprobado
+                      ? scheme.onPrimaryContainer
+                      : scheme.onErrorContainer,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           const SizedBox(height: 16),
 
