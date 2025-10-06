@@ -13,6 +13,7 @@ class PdfService {
     required List<Map<String, dynamic>> modules,
     required int totalScore,
     required int passingScore,
+    required int maxScore,
     required bool aprobado,
   }) async {
     final inspection = _InspectionData.fromRaw(
@@ -20,6 +21,7 @@ class PdfService {
       modules: modules,
       totalScore: totalScore,
       passingScore: passingScore,
+      maxScore: maxScore,
       aprobado: aprobado,
     );
 
@@ -471,7 +473,8 @@ class PdfService {
                 'el plazo para la subsanación de los requerimientos contenidos en este informe no podrá exceder de los 30 días calendario contados desde la entrega del informe de inspección.',
               ),
             pw.SizedBox(height: 20),
-            pw.Text('Puntaje total obtenido: ${inspection.totalScore} / ${inspection.passingScore}'),
+            pw.Text(
+                'Puntaje total obtenido: ${inspection.totalScore} / ${inspection.maxScore} (mínimo: ${inspection.passingScore})'),
             pw.Text(
               inspection.aprobado ? 'Resultado: APROBADO' : 'Resultado: NO APROBADO',
               style: pw.TextStyle(
@@ -646,6 +649,7 @@ class _InspectionData {
     required this.modules,
     required this.totalScore,
     required this.passingScore,
+    required this.maxScore,
     required this.aprobado,
   });
 
@@ -663,6 +667,7 @@ class _InspectionData {
   final List<_ModuleData> modules;
   final int totalScore;
   final int passingScore;
+  final int maxScore;
   final bool aprobado;
 
   String get formattedDate => fechaTexto;
@@ -672,6 +677,7 @@ class _InspectionData {
     required List<Map<String, dynamic>> modules,
     required int totalScore,
     required int passingScore,
+    required int maxScore,
     required bool aprobado,
   }) {
     final inspectorMap = base['inspector'] as Map<String, dynamic>? ?? {};
@@ -717,6 +723,7 @@ class _InspectionData {
       modules: modules.map(_ModuleData.fromMap).toList(),
       totalScore: totalScore,
       passingScore: passingScore,
+      maxScore: maxScore,
       aprobado: aprobado,
     );
   }

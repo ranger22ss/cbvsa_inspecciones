@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
 
 import '../../core/pdf_service.dart';
+import '../../core/templates.dart';
 import 'new_inspection_wizard.dart';
 
 class InspectionDetailPage extends ConsumerWidget {
@@ -17,9 +18,20 @@ class InspectionDetailPage extends ConsumerWidget {
     final tipo = inspection['tipo_inspeccion'] ?? '—';
 
     final resultado = inspection['resultado'] ?? {};
-    final puntaje = resultado['puntaje_total'] ?? 0;
+
+    int _toInt(dynamic value) {
+      if (value is int) return value;
+      if (value is double) return value.round();
+      return int.tryParse(value.toString()) ?? 0;
+    }
+
+    final puntaje = _toInt(resultado['puntaje_total']);
     final aprobado = resultado['aprobado'] ?? false;
-    final minimo = resultado['puntaje_minimo'] ?? 0;
+    final minimo = _toInt(resultado['puntaje_minimo']);
+    final template = templateByCode(tipo.toString());
+    final maximo = resultado.containsKey('puntaje_maximo')
+        ? _toInt(resultado['puntaje_maximo'])
+        : template.maxScore;
 
     final modules = (inspection['modules'] ?? []) as List;
 
@@ -54,6 +66,7 @@ class InspectionDetailPage extends ConsumerWidget {
                   modules: List<Map<String, dynamic>>.from(modules),
                   totalScore: puntaje,
                   passingScore: minimo,
+                  maxScore: maximo,
                   aprobado: aprobado,
                 );
                 await Printing.sharePdf(
@@ -75,7 +88,7 @@ class InspectionDetailPage extends ConsumerWidget {
           Text('Tipo: $tipo'),
           Text('Comercio: $nombre'),
           const Divider(),
-          Text('Puntaje: $puntaje / $minimo'),
+          Text('Puntaje: $puntaje / $maximo (mínimo: $minimo)'),
           Text(
             aprobado ? 'APROBADO ✅' : 'NO APROBADO ❌',
             style: TextStyle(
