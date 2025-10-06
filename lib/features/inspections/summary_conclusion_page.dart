@@ -7,19 +7,21 @@ import '../../core/providers.dart';
 class SummaryConclusionArgs {
   final Map<String, dynamic> baseData;
   final String tipoInspeccion;
-  final List<Map<String, dynamic>> modules;
+  final List<Map<String, dynamic>> modulesData;
   final int passingScore;
   final int maxScore;
   final int totalScore;
+  final int maxScore;
   final bool aprobado;
 
   const SummaryConclusionArgs({
     required this.baseData,
     required this.tipoInspeccion,
-    required this.modules,
+    required this.modulesData,
     required this.passingScore,
     required this.maxScore,
     required this.totalScore,
+    required this.maxScore,
     required this.aprobado,
   });
 }
@@ -193,7 +195,7 @@ class _SummaryConclusionPageState
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          Text('Respuesta: '),
+                          const Text('Respuesta: '),
                           Text(
                             item['respuesta'] == 'yes'
                                 ? 'Sí / Cumple'
