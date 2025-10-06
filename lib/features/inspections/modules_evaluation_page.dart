@@ -2,11 +2,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/providers.dart';
 import '../../core/storage.dart';
 import 'summary_conclusion_page.dart';
 import '../../core/module_templates.dart';
+import '../../core/app_router.dart';
 
 class ModulesEvaluationPage extends ConsumerStatefulWidget {
   final Map<String, dynamic> baseData;
@@ -201,19 +203,18 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
 
     final aprobado = _score >= _tpl.passingScore;
 
-    Navigator.of(context).push(MaterialPageRoute(
-      builder: (_) => SummaryConclusionPage(
-        data: SummaryConclusionArgs(
-          baseData: widget.baseData,
-          tipoInspeccion: _tipoNormalizado,
-          modules: modulesJson,
-          passingScore: _tpl.passingScore,
-          maxScore: _tpl.maxScore,
-          totalScore: _score,
-          aprobado: aprobado,
-        ),
+    context.pushNamed(
+      Routes.pagina_aval_anual,
+      extra: SummaryConclusionArgs(
+        baseData: widget.baseData,
+        tipoInspeccion: _tipoNormalizado,
+        modules: modulesJson,
+        passingScore: _tpl.passingScore,
+        maxScore: _tpl.maxScore,
+        totalScore: _score,
+        aprobado: aprobado,
       ),
-    ));
+    );
   }
 
   @override
