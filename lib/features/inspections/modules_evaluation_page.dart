@@ -47,9 +47,12 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
       final mod = _tpl.modules[m];
       for (final q in mod.items) {
         final key = '${m}_${q.id}';
-        final a = _answers[key] ?? 'no';
+        final a = _answers[key] ?? (q.answerType == AnswerType.yn ? 'no' : 'C');
         if (q.answerType == AnswerType.yn) {
           if (a == 'yes') s += q.points;
+        } else {
+          final map = q.scoreMap ?? const {'A': 10, 'B': 5, 'C': 0};
+          s += map[a] ?? 0;
         }
       }
     }
@@ -112,19 +115,39 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
   }
 
   Widget _answerField(ModuleQuestion q, String key) {
-    final val = _answers[key] ?? 'no';
+    final defaultValue = q.answerType == AnswerType.yn ? 'no' : 'C';
+    final val = _answers.putIfAbsent(key, () => defaultValue);
+    if (q.answerType == AnswerType.yn) {
+      final yesLabel = q.yesLabel ?? 'Sí / Cumple';
+      final noLabel = q.noLabel ?? 'No cumple';
+      final naLabel = q.naLabel ?? 'No aplica';
+      return DropdownButtonFormField<String>(
+        value: val,
+        items: [
+          DropdownMenuItem(value: 'yes', child: Text(yesLabel)),
+          DropdownMenuItem(value: 'no', child: Text(noLabel)),
+          DropdownMenuItem(value: 'na', child: Text(naLabel)),
+        ],
+        onChanged: (v) {
+          _answers[key] = v ?? defaultValue;
+          _recalc();
+        },
+        decoration: const InputDecoration(labelText: 'Resultado'),
+      );
+    }
+
     return DropdownButtonFormField<String>(
       value: val,
       items: const [
-        DropdownMenuItem(value: 'yes', child: Text('Sí / Cumple')),
-        DropdownMenuItem(value: 'no', child: Text('No cumple')),
-        DropdownMenuItem(value: 'na', child: Text('No aplica')),
+        DropdownMenuItem(value: 'A', child: Text('A')),
+        DropdownMenuItem(value: 'B', child: Text('B')),
+        DropdownMenuItem(value: 'C', child: Text('C')),
       ],
       onChanged: (v) {
-        _answers[key] = v ?? 'no';
+        _answers[key] = v ?? defaultValue;
         _recalc();
       },
-      decoration: const InputDecoration(labelText: 'Resultado'),
+      decoration: const InputDecoration(labelText: 'Resultado (A/B/C)'),
     );
   }
 
@@ -177,9 +200,14 @@ class _ModulesEvaluationPageState extends ConsumerState<ModulesEvaluationPage> {
       final items = <Map<String, dynamic>>[];
       for (final q in mod.items) {
         final key = '${m}_${q.id}';
-        final a = _answers[key] ?? 'no';
+        final a = _answers[key] ?? (q.answerType == AnswerType.yn ? 'no' : 'C');
         final obs = _observations[key] ?? '';
-        int pts = (a == 'yes') ? q.points : 0;
+        int pts;
+        if (q.answerType == AnswerType.yn) {
+          pts = (a == 'yes') ? q.points : 0;
+        } else {
+          pts = (q.scoreMap ?? const {'A': 10, 'B': 5, 'C': 0})[a] ?? 0;
+        }
 
         final fotos = (_photos[key] ?? const <Map<String, String>>[])
             .map((e) => {
