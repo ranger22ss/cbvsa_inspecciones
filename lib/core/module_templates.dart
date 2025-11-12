@@ -8,6 +8,9 @@ class ModuleQuestion {
   final AnswerType answerType;
   final int points;
   final Map<String, int>? scoreMap;
+  final String? yesLabel;
+  final String? noLabel;
+  final String? naLabel;
 
   const ModuleQuestion({
     required this.id,
@@ -15,6 +18,9 @@ class ModuleQuestion {
     required this.answerType,
     required this.points,
     this.scoreMap,
+    this.yesLabel,
+    this.noLabel,
+    this.naLabel,
   });
 
   int get maxAchievablePoints {
@@ -178,6 +184,51 @@ final comercioGrandeTemplate = _makeTemplate(
         ),
       ],
     ),
+    const ModuleTemplate(
+      title: 'Escaleras y accesos seguros',
+      items: [
+        ModuleQuestion(
+          id: 'cintas_antideslizantes',
+          text:
+              '¿Las escaleras cuentan con cintas antideslizantes en todos los peldaños?',
+          answerType: AnswerType.yn,
+          points: 10,
+          yesLabel: 'Cuenta',
+          noLabel: 'No cuenta',
+          naLabel: 'No aplica',
+        ),
+        ModuleQuestion(
+          id: 'cintas_estado',
+          text:
+              '¿Las cintas antideslizantes están firmes, sin desprendimientos ni desgaste?',
+          answerType: AnswerType.yn,
+          points: 10,
+          yesLabel: 'Cuenta',
+          noLabel: 'No cuenta',
+          naLabel: 'No aplica',
+        ),
+        ModuleQuestion(
+          id: 'pasamanos',
+          text:
+              '¿Las escaleras tienen pasamanos continuos y a la altura reglamentaria?',
+          answerType: AnswerType.yn,
+          points: 10,
+          yesLabel: 'Cuenta',
+          noLabel: 'No cuenta',
+          naLabel: 'No aplica',
+        ),
+        ModuleQuestion(
+          id: 'pasamanos_condicion',
+          text:
+              '¿Los pasamanos están firmes, sin juego y con terminales seguros?',
+          answerType: AnswerType.yn,
+          points: 10,
+          yesLabel: 'Cuenta',
+          noLabel: 'No cuenta',
+          naLabel: 'No aplica',
+        ),
+      ],
+    ),
   ],
 );
 
@@ -205,13 +256,22 @@ final estacionServicioTemplate = _makeTemplate(
         ),
         ModuleQuestion(
           id: 'tanques',
-          text: '¿Los tanques de almacenamiento cumplen con medidas reglamentarias?',
+          text:
+              '¿Los tanques de almacenamiento cumplen con medidas reglamentarias y mantenimiento vigente?',
           answerType: AnswerType.yn,
           points: 10,
         ),
         ModuleQuestion(
           id: 'canaletas',
-          text: '¿Las canaletas antiderrames están limpias y funcionales?',
+          text:
+              '¿Las canaletas contra derrames están completas en longitud y en buen estado?',
+          answerType: AnswerType.yn,
+          points: 10,
+        ),
+        ModuleQuestion(
+          id: 'tanques_aforo',
+          text:
+              '¿Los tanques de aforo tienen calibración, protecciones y registros actualizados?',
           answerType: AnswerType.yn,
           points: 10,
         ),

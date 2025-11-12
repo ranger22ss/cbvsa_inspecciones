@@ -290,16 +290,22 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
   }
 
   Widget _buildAnswerField(ModuleQuestion question, String key) {
+    final defaultValue = question.answerType == AnswerType.yn ? 'no' : 'C';
+    final currentValue = _answers[key] ?? defaultValue;
+
     if (question.answerType == AnswerType.yn) {
+      final yesLabel = question.yesLabel ?? 'Sí / Cumple';
+      final noLabel = question.noLabel ?? 'No cumple';
+      final naLabel = question.naLabel ?? 'No aplica';
       return DropdownButtonFormField<String>(
-        value: _answers[key],
+        value: currentValue,
         items: [
-          const DropdownMenuItem(value: 'yes', child: Text('Sí / Cumple')),
-          const DropdownMenuItem(value: 'no', child: Text('No cumple')),
-          const DropdownMenuItem(value: 'na', child: Text('No aplica')),
+          DropdownMenuItem(value: 'yes', child: Text(yesLabel)),
+          DropdownMenuItem(value: 'no', child: Text(noLabel)),
+          DropdownMenuItem(value: 'na', child: Text(naLabel)),
         ],
         onChanged: (value) {
-          setState(() => _answers[key] = value ?? 'no');
+          setState(() => _answers[key] = value ?? defaultValue);
           _recalculateScore();
         },
         decoration: const InputDecoration(labelText: 'Resultado'),
@@ -307,14 +313,14 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
     }
 
     return DropdownButtonFormField<String>(
-      value: _answers[key],
+      value: currentValue,
       items: [
         const DropdownMenuItem(value: 'A', child: Text('A')),
         const DropdownMenuItem(value: 'B', child: Text('B')),
         const DropdownMenuItem(value: 'C', child: Text('C')),
       ],
       onChanged: (value) {
-        setState(() => _answers[key] = value ?? 'C');
+        setState(() => _answers[key] = value ?? defaultValue);
         _recalculateScore();
       },
       decoration: const InputDecoration(labelText: 'Resultado (A/B/C)'),
