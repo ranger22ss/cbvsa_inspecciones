@@ -35,7 +35,7 @@ class HomePage extends ConsumerWidget {
               const SizedBox(height: 6), Text('Administra el trabajo de inspección desde un solo lugar.', style: TextStyle(color: scheme.onSurfaceVariant)),
               const SizedBox(height: 18),
               GridView.count(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisCount: wide ? 2 : 1, crossAxisSpacing: 14, mainAxisSpacing: 14, childAspectRatio: wide ? 2.75 : 2.6, children: [
-                AppNavButton(icon: Icons.assignment_add_outlined, label: 'Nueva inspección', description: 'Iniciar un informe desde cero', onPressed: () => context.push('/inspections/start')),
+                AppNavButton(icon: Icons.note_add_outlined, label: 'Nueva inspección', description: 'Iniciar un informe desde cero', onPressed: () => context.push('/inspections/start')),
                 AppNavButton(icon: Icons.folder_shared_outlined, label: 'Inspecciones', description: 'Consultar y continuar informes guardados', onPressed: () => context.push('/inspections')),
                 AppNavButton(icon: Icons.badge_outlined, label: 'Perfil del inspector', description: 'Datos profesionales y cuenta', onPressed: () => context.push('/profile')),
                 AppNavButton(icon: Icons.info_outline_rounded, label: AppBranding.aboutMenuLabel, description: 'Información institucional', onPressed: () => context.push('/about')),
