@@ -2,159 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../../core/branding/app_branding.dart';
 import '../../core/providers.dart';
 
-class LoginPage extends ConsumerStatefulWidget {
-  const LoginPage({super.key});
-
-  @override
-  ConsumerState<LoginPage> createState() => _LoginPageState();
-}
-
+class LoginPage extends ConsumerStatefulWidget { const LoginPage({super.key}); @override ConsumerState<LoginPage> createState() => _LoginPageState(); }
 class _LoginPageState extends ConsumerState<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailCtrl = TextEditingController();
-  final _passCtrl = TextEditingController();
-  bool _isLogin = true;
-
-  // Datos iniciales del perfil si es registro:
-  final _nameCtrl =
-      TextEditingController(text: AppBranding.inspectorDefaultName);
-  final _idCtrl = TextEditingController(text: '00000000');
-  final _rankCtrl = TextEditingController(text: 'Bombero');
-
-  bool _loading = false;
-
-  @override
-  void dispose() {
-    _emailCtrl.dispose();
-    _passCtrl.dispose();
-    _nameCtrl.dispose();
-    _idCtrl.dispose();
-    _rankCtrl.dispose();
-    super.dispose();
-  }
-
+  final _formKey=GlobalKey<FormState>(); final _emailCtrl=TextEditingController(); final _passCtrl=TextEditingController(); final _nameCtrl=TextEditingController(text:AppBranding.inspectorDefaultName); final _idCtrl=TextEditingController(); final _rankCtrl=TextEditingController(text:'Bombero');
+  bool _isLogin=true,_loading=false,_obscure=true;
+  @override void dispose(){_emailCtrl.dispose();_passCtrl.dispose();_nameCtrl.dispose();_idCtrl.dispose();_rankCtrl.dispose();super.dispose();}
+  void _show(String text)=>ScaffoldMessenger.of(context).showSnackBar(SnackBar(content:Text(text)));
   Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _loading = true);
-
-    final supabase = ref.read(supabaseProvider);
-    try {
-      if (_isLogin) {
-        final res = await supabase.auth.signInWithPassword(
-          email: _emailCtrl.text.trim(),
-          password: _passCtrl.text.trim(),
-        );
-        if (res.session == null) {
-          _showSnack('Sesión no iniciada. Revisa correo/contraseña o confirma tu email.');
-          setState(() => _loading = false);
-          return;
-        }
-      } else {
-        final res = await supabase.auth.signUp(
-          email: _emailCtrl.text.trim(),
-          password: _passCtrl.text.trim(),
-        );
-
-        // Si tu proyecto requiere confirmación por email, puede venir null
-        if (res.user == null && res.session == null) {
-          _showSnack('Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.');
-          setState(() => _loading = false);
-          return;
-        }
-
-        // Completar perfil base (si ya hay sesión/usuario)
-        final authUser = supabase.auth.currentUser ?? res.user!;
-        await supabase.from('profiles').update({
-          'full_name': _nameCtrl.text.trim(),
-          'national_id': _idCtrl.text.trim(),
-          'rank': _rankCtrl.text.trim(),
-        }).eq('id', authUser.id);
-      }
-
-      // Refrescar y navegar
-      ref.invalidate(currentUserProvider);
-      if (mounted) context.go('/');
-
-    } on AuthException catch (e) {
-      _showSnack(e.message);
-    } catch (_) {
-      _showSnack('Error inesperado. Inténtalo de nuevo.');
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+    if(!_formKey.currentState!.validate())return; setState(()=>_loading=true); final supabase=ref.read(supabaseProvider);
+    try{
+      if(_isLogin){final response=await supabase.auth.signInWithPassword(email:_emailCtrl.text.trim(),password:_passCtrl.text);if(response.session==null)throw const AuthException('No fue posible iniciar sesión.');}
+      else{final response=await supabase.auth.signUp(email:_emailCtrl.text.trim(),password:_passCtrl.text);if(response.user==null){_show('Cuenta creada. Revisa tu correo para confirmar.');return;} if(supabase.auth.currentUser!=null){await supabase.from('profiles').update({'full_name':_nameCtrl.text.trim(),'national_id':_idCtrl.text.trim(),'rank':_rankCtrl.text.trim()}).eq('id',response.user!.id);}}
+      ref.invalidate(currentUserProvider); if(mounted)context.go('/home');
+    }on AuthException catch(e){_show(e.message);}catch(_){_show('Ocurrió un error. Comprueba la conexión e inténtalo nuevamente.');}finally{if(mounted)setState(()=>_loading=false);}
   }
-
-  void _showSnack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Ingreso de Inspectores')),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 450),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                children: [
-                  Text(AppBranding.appName,
-                      style: Theme.of(context).textTheme.headlineSmall),
-                  const SizedBox(height: 12),
-                  SwitchListTile(
-                    title: Text(_isLogin ? 'Modo: Iniciar sesión' : 'Modo: Crear cuenta'),
-                    value: _isLogin,
-                    onChanged: (v) => setState(() => _isLogin = v),
-                  ),
-                  TextFormField(
-                    controller: _emailCtrl,
-                    decoration: const InputDecoration(labelText: 'Correo'),
-                    validator: (v) => (v == null || v.isEmpty) ? 'Requerido' : null,
-                  ),
-                  TextFormField(
-                    controller: _passCtrl,
-                    decoration: const InputDecoration(labelText: 'Contraseña'),
-                    obscureText: true,
-                    validator: (v) => (v == null || v.length < 6) ? 'Mínimo 6 caracteres' : null,
-                  ),
-                  if (!_isLogin) ...[
-                    const SizedBox(height: 8),
-                    Text('Datos iniciales del perfil', style: Theme.of(context).textTheme.labelLarge),
-                    TextFormField(
-                      controller: _nameCtrl,
-                      decoration: const InputDecoration(labelText: 'Nombre completo'),
-                      validator: (v) => (v == null || v.isEmpty) ? 'Requerido' : null,
-                    ),
-                    TextFormField(
-                      controller: _idCtrl,
-                      decoration: const InputDecoration(labelText: 'Cédula'),
-                      validator: (v) => (v == null || v.isEmpty) ? 'Requerido' : null,
-                    ),
-                    TextFormField(
-                      controller: _rankCtrl,
-                      decoration: const InputDecoration(labelText: 'Rango'),
-                      validator: (v) => (v == null || v.isEmpty) ? 'Requerido' : null,
-                    ),
-                  ],
-                  const SizedBox(height: 16),
-                  FilledButton.icon(
-                    onPressed: _loading ? null : _submit,
-                    icon: Icon(_isLogin ? Icons.login : Icons.person_add),
-                    label: Text(_isLogin ? 'Ingresar' : 'Crear cuenta'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  @override Widget build(BuildContext context){
+    final scheme=Theme.of(context).colorScheme;
+    return Scaffold(body:SafeArea(child:LayoutBuilder(builder:(context,constraints){final wide=constraints.maxWidth>=850;return Center(child:SingleChildScrollView(padding:const EdgeInsets.all(20),child:ConstrainedBox(constraints:const BoxConstraints(maxWidth:980),child:Card(child:ClipRRect(borderRadius:BorderRadius.circular(18),child:Row(crossAxisAlignment:CrossAxisAlignment.stretch,children:[
+      if(wide)Expanded(child:Container(padding:const EdgeInsets.all(42),decoration:const BoxDecoration(gradient:LinearGradient(colors:[Color(0xFF0B2942),Color(0xFF17496E)],begin:Alignment.topLeft,end:Alignment.bottomRight)),child:Column(mainAxisAlignment:MainAxisAlignment.center,crossAxisAlignment:CrossAxisAlignment.start,children:[Container(width:88,height:88,padding:const EdgeInsets.all(8),decoration:BoxDecoration(color:Colors.white,borderRadius:BorderRadius.circular(20)),child:Image.asset(AppBranding.logoAssetPath!)),const SizedBox(height:26),const Text('CBVSA\nInspecciones',style:TextStyle(color:Colors.white,fontSize:36,height:1.05,fontWeight:FontWeight.w800)),const SizedBox(height:16),const Text('Gestión segura y organizada de las inspecciones institucionales.',style:TextStyle(color:Color(0xFFD7E2EA),fontSize:16,height:1.5))]))),
+      Expanded(child:Padding(padding:EdgeInsets.all(wide?38:24),child:Form(key:_formKey,child:Column(mainAxisSize:MainAxisSize.min,crossAxisAlignment:CrossAxisAlignment.stretch,children:[
+        if(!wide)...[Center(child:Container(width:76,height:76,padding:const EdgeInsets.all(7),decoration:BoxDecoration(color:Colors.white,border:Border.all(color:scheme.outlineVariant),borderRadius:BorderRadius.circular(18)),child:Image.asset(AppBranding.logoAssetPath!))),const SizedBox(height:18)],
+        Text(_isLogin?'Bienvenido':'Crear cuenta',style:Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight:FontWeight.w800)),const SizedBox(height:7),Text(_isLogin?'Ingresa con tu cuenta institucional.':'Registra los datos básicos del inspector.',style:TextStyle(color:scheme.onSurfaceVariant)),const SizedBox(height:24),
+        TextFormField(controller:_emailCtrl,keyboardType:TextInputType.emailAddress,autofillHints:const[AutofillHints.email],decoration:const InputDecoration(labelText:'Correo electrónico',prefixIcon:Icon(Icons.email_outlined)),validator:(v)=>(v==null||!v.contains('@'))?'Ingresa un correo válido':null),const SizedBox(height:14),
+        TextFormField(controller:_passCtrl,obscureText:_obscure,decoration:InputDecoration(labelText:'Contraseña',prefixIcon:const Icon(Icons.lock_outline),suffixIcon:IconButton(onPressed:()=>setState(()=>_obscure=!_obscure),icon:Icon(_obscure?Icons.visibility_outlined:Icons.visibility_off_outlined))),validator:(v)=>(v==null||v.length<6)?'Mínimo 6 caracteres':null),
+        if(!_isLogin)...[const SizedBox(height:14),TextFormField(controller:_nameCtrl,decoration:const InputDecoration(labelText:'Nombre completo',prefixIcon:Icon(Icons.person_outline)),validator:(v)=>(v==null||v.trim().isEmpty)?'Campo requerido':null),const SizedBox(height:14),TextFormField(controller:_idCtrl,decoration:const InputDecoration(labelText:'Cédula',prefixIcon:Icon(Icons.badge_outlined)),validator:(v)=>(v==null||v.trim().isEmpty)?'Campo requerido':null),const SizedBox(height:14),TextFormField(controller:_rankCtrl,decoration:const InputDecoration(labelText:'Rango',prefixIcon:Icon(Icons.shield_outlined)),validator:(v)=>(v==null||v.trim().isEmpty)?'Campo requerido':null)],
+        const SizedBox(height:22),FilledButton.icon(onPressed:_loading?null:_submit,icon:_loading?const SizedBox(width:18,height:18,child:CircularProgressIndicator(strokeWidth:2)):Icon(_isLogin?Icons.login:Icons.person_add_alt_1),label:Text(_isLogin?'Ingresar':'Crear cuenta')),const SizedBox(height:12),TextButton(onPressed:_loading?null:()=>setState(()=>_isLogin=!_isLogin),child:Text(_isLogin?'¿No tienes cuenta? Crear una':'Ya tengo cuenta · Iniciar sesión')),
+      ]))))
+    ]))))));})));}
 }
+
