@@ -1,7 +1,6 @@
-/// Tipo de respuesta
+/// Tipo de respuesta de cada ítem.
 enum AnswerType { yn, abc }
 
-/// Modelo de una pregunta
 class ModuleQuestion {
   final String id;
   final String text;
@@ -11,353 +10,157 @@ class ModuleQuestion {
   final String? yesLabel;
   final String? noLabel;
   final String? naLabel;
-
-  const ModuleQuestion({
-    required this.id,
-    required this.text,
-    required this.answerType,
-    required this.points,
-    this.scoreMap,
-    this.yesLabel,
-    this.noLabel,
-    this.naLabel,
-  });
-
+  const ModuleQuestion({required this.id, required this.text, required this.answerType, required this.points, this.scoreMap, this.yesLabel, this.noLabel, this.naLabel});
   int get maxAchievablePoints {
-    if (answerType == AnswerType.yn) {
-      return points;
-    }
+    if (answerType == AnswerType.yn) return points;
     final map = scoreMap ?? const {'A': 10, 'B': 5, 'C': 0};
-    var max = 0;
-    for (final value in map.values) {
-      if (value > max) max = value;
-    }
-    return max;
+    return map.values.fold<int>(0, (max, value) => value > max ? value : max);
   }
 }
 
-/// Modelo de un módulo (grupo de preguntas)
 class ModuleTemplate {
   final String title;
   final List<ModuleQuestion> items;
   const ModuleTemplate({required this.title, required this.items});
 }
 
-/// Set completo por tipo de inspección
 class ModuleTemplateSet {
   final String code;
   final String name;
   final int passingScore;
   final int maxScore;
   final List<ModuleTemplate> modules;
-
-  const ModuleTemplateSet({
-    required this.code,
-    required this.name,
-    required this.passingScore,
-    required this.maxScore,
-    required this.modules,
-  });
+  const ModuleTemplateSet({required this.code, required this.name, required this.passingScore, required this.maxScore, required this.modules});
 }
 
-// =============================================================
-// 🔥 PLANTILLAS ACTUALIZADAS (según las imágenes que enviaste)
-// =============================================================
-
-// Helper para crear plantilla con puntaje total y 70% mínimo
-ModuleTemplateSet _makeTemplate({
-  required String code,
-  required String name,
-  required List<ModuleTemplate> modules,
-}) {
-  final total = modules.fold<int>(
-    0,
-    (sum, m) =>
-        sum + m.items.fold<int>(0, (s, q) => s + q.maxAchievablePoints),
-  );
-  final passing = (total * 0.7).round();
-  return ModuleTemplateSet(
-    code: code,
-    name: name,
-    modules: modules,
-    passingScore: passing,
-    maxScore: total,
-  );
+ModuleTemplateSet _makeTemplate({required String code, required String name, required int passingScore, required List<ModuleTemplate> modules}) {
+  final total = modules.fold<int>(0, (sum, module) => sum + module.items.fold<int>(0, (subtotal, question) => subtotal + question.maxAchievablePoints));
+  assert(total == 100, 'Cada cuestionario debe sumar exactamente 100 puntos.');
+  return ModuleTemplateSet(code: code, name: name, passingScore: passingScore, maxScore: total, modules: modules);
 }
 
-// =============================================================
-// 🏪 COMERCIO PEQUEÑO
-// =============================================================
 final comercioPequenoTemplate = _makeTemplate(
-  code: 'comercio_pequeno',
-  name: 'Comercio pequeño',
+  code: "comercio_pequeno",
+  name: "Comercio pequeño",
+  passingScore: 70,
   modules: [
-    const ModuleTemplate(
-      title: 'Evaluación general',
+    ModuleTemplate(
+      title: "Cuestionario: Comercio pequeño",
       items: [
-        ModuleQuestion(
-          id: 'extintores',
-          text: '¿Cuenta con la cantidad adecuada de extintores?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'recarga',
-          text: '¿Los extintores están recargados y con mantenimiento vigente?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'botiquin',
-          text: '¿Cuenta con botiquín de primeros auxilios completo?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'senalizacion',
-          text: '¿Tiene señalizaciones visibles y adecuadas?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'instalaciones',
-          text: '¿Las instalaciones eléctricas están en buen estado?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
+        ModuleQuestion(id: "extintor_riesgo", text: "¿Cuenta con extintor adecuado al riesgo existente?", answerType: AnswerType.yn, points: 12),
+        ModuleQuestion(id: "extintor_estado", text: "¿El extintor se encuentra vigente, cargado, señalizado, visible y de fácil acceso?", answerType: AnswerType.yn, points: 10),
+        ModuleQuestion(id: "instalaciones_electricas", text: "¿Las instalaciones eléctricas visibles se encuentran en condiciones seguras, sin empalmes improvisados, conductores expuestos o sobrecargas evidentes?", answerType: AnswerType.yn, points: 12),
+        ModuleQuestion(id: "tableros_electricos", text: "¿Los tableros eléctricos se encuentran identificados, protegidos y libres de obstáculos?", answerType: AnswerType.yn, points: 7),
+        ModuleQuestion(id: "ruta_salida", text: "¿La ruta hacia la salida permanece despejada y permite una evacuación segura?", answerType: AnswerType.yn, points: 12),
+        ModuleQuestion(id: "puerta_evacuacion", text: "¿La puerta o salida utilizada para evacuación puede abrirse fácilmente y sin obstáculos?", answerType: AnswerType.yn, points: 10),
+        ModuleQuestion(id: "senalizacion_basica", text: "¿Existe señalización básica de salida y ubicación del extintor?", answerType: AnswerType.yn, points: 8),
+        ModuleQuestion(id: "materiales_combustibles", text: "¿Los materiales combustibles se almacenan de manera segura y alejados de fuentes de ignición?", answerType: AnswerType.yn, points: 8),
+        ModuleQuestion(id: "botiquin", text: "¿Botiquín completo e instalado de manera correcta?", answerType: AnswerType.yn, points: 8),
+        ModuleQuestion(id: "personal_emergencia", text: "¿El personal conoce cómo comunicar una emergencia y utilizar inicialmente un extintor?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "orden_aseo", text: "¿Existe orden y aseo suficiente para evitar acumulación peligrosa de material combustible?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "accesos_emergencia", text: "¿Se encuentran libres de obstáculos los accesos para atención de una emergencia?", answerType: AnswerType.yn, points: 4),
       ],
     ),
   ],
 );
 
-// =============================================================
-// 🏢 COMERCIO GRANDE
-// =============================================================
 final comercioGrandeTemplate = _makeTemplate(
-  code: 'comercio_grande',
-  name: 'Comercio grande',
+  code: "comercio_grande",
+  name: "Comercio grande",
+  passingScore: 80,
   modules: [
-    const ModuleTemplate(
-      title: 'Protección y seguridad general',
+    ModuleTemplate(
+      title: "Cuestionario: Comercio grande",
       items: [
-        ModuleQuestion(
-          id: 'salidas',
-          text: '¿Las salidas de emergencia están señalizadas y libres?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'extintores',
-          text: '¿Los extintores cumplen con las normas vigentes?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'plan_emergencia',
-          text: '¿Cuenta con plan de emergencia y evacuación actualizado?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'botiquin',
-          text: '¿Dispone de botiquín completo y accesible?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'senales',
-          text: '¿Señales de seguridad correctamente instaladas?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'instalaciones',
-          text: '¿Instalaciones eléctricas seguras?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'brigada',
-          text: '¿Existe brigada de emergencia entrenada?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-      ],
-    ),
-    const ModuleTemplate(
-      title: 'Escaleras y accesos seguros',
-      items: [
-        ModuleQuestion(
-          id: 'cintas_antideslizantes',
-          text:
-              '¿Las escaleras cuentan con cintas antideslizantes en todos los peldaños?',
-          answerType: AnswerType.yn,
-          points: 10,
-          yesLabel: 'Cuenta',
-          noLabel: 'No cuenta',
-          naLabel: 'No aplica',
-        ),
-        ModuleQuestion(
-          id: 'cintas_estado',
-          text:
-              '¿Las cintas antideslizantes están firmes, sin desprendimientos ni desgaste?',
-          answerType: AnswerType.yn,
-          points: 10,
-          yesLabel: 'Cuenta',
-          noLabel: 'No cuenta',
-          naLabel: 'No aplica',
-        ),
-        ModuleQuestion(
-          id: 'pasamanos',
-          text:
-              '¿Las escaleras tienen pasamanos continuos y a la altura reglamentaria?',
-          answerType: AnswerType.yn,
-          points: 10,
-          yesLabel: 'Cuenta',
-          noLabel: 'No cuenta',
-          naLabel: 'No aplica',
-        ),
-        ModuleQuestion(
-          id: 'pasamanos_condicion',
-          text:
-              '¿Los pasamanos están firmes, sin juego y con terminales seguros?',
-          answerType: AnswerType.yn,
-          points: 10,
-          yesLabel: 'Cuenta',
-          noLabel: 'No cuenta',
-          naLabel: 'No aplica',
-        ),
+        ModuleQuestion(id: "extintores_riesgo", text: "¿Los extintores corresponden a los riesgos existentes y están distribuidos adecuadamente?", answerType: AnswerType.yn, points: 7),
+        ModuleQuestion(id: "extintores_estado", text: "¿Los extintores están vigentes, señalizados, visibles y accesibles?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "rutas_evacuacion", text: "¿Las rutas de evacuación se encuentran completamente despejadas?", answerType: AnswerType.yn, points: 7),
+        ModuleQuestion(id: "salidas_evacuacion", text: "¿Las salidas son suficientes y permiten una evacuación segura según las características del establecimiento?", answerType: AnswerType.yn, points: 7),
+        ModuleQuestion(id: "puertas_evacuacion", text: "¿Las puertas destinadas a evacuación funcionan correctamente y permanecen disponibles?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "senalizacion_emergencia", text: "¿Existe señalización visible de rutas, salidas y equipos de emergencia?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "iluminacion_emergencia", text: "¿Cuenta con iluminación de emergencia donde corresponda?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "instalaciones_electricas", text: "¿Las instalaciones eléctricas visibles presentan condiciones seguras?", answerType: AnswerType.yn, points: 7),
+        ModuleQuestion(id: "tableros_electricos", text: "¿Los tableros eléctricos están identificados, protegidos y despejados?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "deteccion_alarma", text: "¿Los sistemas de detección o alarma instalados funcionan correctamente, cuando sean requeridos?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "sistemas_contra_incendio", text: "¿Los gabinetes, redes o sistemas contra incendio existentes están accesibles y operativos?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "almacenamiento_mercancias", text: "¿El almacenamiento de mercancías mantiene condiciones seguras frente al riesgo de incendio?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "botiquin", text: "¿Botiquín completo, adecuado y bien ubicado?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "procedimientos_evacuacion", text: "¿Existen procedimientos básicos para evacuación y atención de emergencias?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "actuacion_incendio", text: "¿El personal conoce los procedimientos de actuación en caso de incendio?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "aforo_ocupacion", text: "¿Se encuentra controlado el aforo y la ocupación de los espacios?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "areas_especiales", text: "¿Las áreas técnicas, cocinas o zonas especiales cuentan con medidas de protección acordes al riesgo?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "orden_aseo_accesibilidad", text: "¿El establecimiento mantiene condiciones adecuadas de orden, aseo y accesibilidad para emergencias?", answerType: AnswerType.yn, points: 6),
       ],
     ),
   ],
 );
 
-// =============================================================
-// ⛽ ESTACIÓN DE SERVICIO
-// =============================================================
 final estacionServicioTemplate = _makeTemplate(
-  code: 'estacion_servicio',
-  name: 'Estación de servicio',
+  code: "estacion_servicio",
+  name: "Estación de servicio",
+  passingScore: 85,
   modules: [
     ModuleTemplate(
-      title: 'Seguridad contra incendios',
+      title: "Cuestionario: Estación de servicio",
       items: [
-        ModuleQuestion(
-          id: 'plan_emergencia',
-          text: '¿Cuenta con plan de emergencia completo?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'tuberias',
-          text: '¿Las tuberías se encuentran en buen estado sin fugas?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'tanques',
-          text:
-              '¿Los tanques de almacenamiento cumplen con medidas reglamentarias y mantenimiento vigente?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'canaletas',
-          text:
-              '¿Las canaletas contra derrames están completas en longitud y en buen estado?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'tanques_aforo',
-          text:
-              '¿Los tanques de aforo tienen calibración, protecciones y registros actualizados?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'extintores',
-          text: '¿Dispone de extintores adecuados y vigentes?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'botiquin',
-          text: '¿Cuenta con botiquín completo?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'senalizacion',
-          text: '¿Cuenta con señalización visible?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
+        ModuleQuestion(id: "extintores_combustibles", text: "¿Los extintores corresponden al riesgo de combustibles líquidos existente?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "botiquin", text: "¿Botiquín adecuado, completo y bien ubicado?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "distribucion_extintores", text: "¿La cantidad y distribución de extintores cubre las diferentes áreas de riesgo?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "islas_abastecimiento", text: "¿Las islas de abastecimiento permanecen libres de acumulación de materiales combustibles?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "corte_emergencia", text: "¿Existen dispositivos claramente identificados para suspensión o corte de emergencia del suministro?", answerType: AnswerType.yn, points: 7),
+        ModuleQuestion(id: "parada_emergencia", text: "¿Los dispositivos de parada de emergencia se encuentran accesibles y operativos?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "fuentes_ignicion", text: "¿Se controla adecuadamente la presencia de fuentes de ignición?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "senalizacion_prohibiciones", text: "¿Existe señalización de prohibición de fumar, apagar motor y otras advertencias necesarias?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "instalaciones_electricas", text: "¿Las instalaciones eléctricas de las zonas de riesgo presentan condiciones seguras?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "tableros_electricos", text: "¿Los tableros eléctricos están protegidos, identificados y accesibles?", answerType: AnswerType.yn, points: 3),
+        ModuleQuestion(id: "almacenamiento_descarga", text: "¿Las zonas de almacenamiento y descarga de combustible se encuentran protegidas y controladas?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "procedimientos_descargue", text: "¿Existen procedimientos seguros para descargue de combustible?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "control_derrames", text: "¿La estación dispone de elementos para control inicial de derrames?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "drenajes", text: "¿Los sistemas de drenaje evitan condiciones peligrosas por acumulación o propagación de combustible?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "rutas_salidas", text: "¿Las rutas y salidas de evacuación se mantienen libres?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "punto_encuentro", text: "¿Existe señalización y punto de encuentro para evacuación?", answerType: AnswerType.yn, points: 3),
+        ModuleQuestion(id: "procedimiento_emergencia", text: "¿El personal conoce el procedimiento ante incendio, derrame o fuga?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "medios_control", text: "¿El personal conoce y puede operar los medios iniciales de control disponibles?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "plan_emergencias", text: "¿Existe un plan para atención de emergencias?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "condiciones_generales", text: "¿Las condiciones generales de almacenamiento, orden y separación de sustancias son seguras?", answerType: AnswerType.yn, points: 7),
       ],
     ),
   ],
 );
 
-// =============================================================
-// 🏭 INDUSTRIA
-// =============================================================
 final industriaTemplate = _makeTemplate(
-  code: 'industria',
-  name: 'Industria',
+  code: "industria",
+  name: "Industria",
+  passingScore: 90,
   modules: [
     ModuleTemplate(
-      title: 'Seguridad industrial y prevención',
+      title: "Cuestionario: Industria",
       items: [
-        ModuleQuestion(
-          id: 'sistema_alarma',
-          text: '¿Cuenta con sistema de alarma contra incendios funcional?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'hidrantes',
-          text: '¿Tiene hidrantes operativos y accesibles?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'extintores',
-          text: '¿Extintores suficientes y en buen estado?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'rutas_evacuacion',
-          text: '¿Rutas de evacuación señalizadas y libres?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'equipos_proteccion',
-          text: '¿El personal cuenta con equipos de protección personal?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'plan_emergencia',
-          text: '¿Tiene plan de emergencia vigente y aprobado?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
-        ModuleQuestion(
-          id: 'capacitacion',
-          text: '¿El personal ha recibido capacitación en manejo de emergencias?',
-          answerType: AnswerType.yn,
-          points: 10,
-        ),
+        ModuleQuestion(id: "riesgos_proceso", text: "¿Se encuentran identificados los riesgos de incendio propios del proceso industrial?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "botiquin", text: "¿Botiquín adecuado, completo y bien ubicado?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "extintores_estado", text: "¿Los extintores se encuentran vigentes, señalizados y accesibles?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "distribucion_equipos", text: "¿La distribución de equipos contra incendio cubre adecuadamente las áreas de riesgo?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "sistemas_fijos", text: "¿Los sistemas fijos de protección contra incendio requeridos se encuentran operativos?", answerType: AnswerType.yn, points: 7),
+        ModuleQuestion(id: "deteccion_alarma", text: "¿Los sistemas de detección y alarma instalados funcionan correctamente?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "rutas_evacuacion", text: "¿Las rutas de evacuación están libres y claramente identificadas?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "salidas_emergencia", text: "¿Las salidas de emergencia funcionan correctamente?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "iluminacion_senalizacion", text: "¿Cuenta con iluminación y señalización de emergencia donde corresponda?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "instalaciones_electricas", text: "¿Las instalaciones eléctricas presentan condiciones seguras para el proceso desarrollado?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "tableros_equipos", text: "¿Los tableros y equipos eléctricos están protegidos e identificados?", answerType: AnswerType.yn, points: 3),
+        ModuleQuestion(id: "materiales_combustibles", text: "¿Los materiales combustibles están almacenados de acuerdo con sus características y riesgos?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "sustancias_peligrosas", text: "¿Las sustancias inflamables o peligrosas, cuando existen, se encuentran debidamente segregadas e identificadas?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "fuentes_ignicion", text: "¿Existe control de fuentes de ignición y trabajos en caliente?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "maquinaria_procesos", text: "¿La maquinaria y los procesos con generación de calor cuentan con medidas de seguridad contra incendio?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "plan_emergencias", text: "¿Existe un plan de emergencias acorde con los riesgos de la empresa?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "personal_preparado", text: "¿Existe organización o personal preparado para responder inicialmente ante emergencias?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "mantenimiento_sistemas", text: "¿Se realizan inspecciones, mantenimiento o pruebas de los sistemas de protección contra incendio?", answerType: AnswerType.yn, points: 5),
+        ModuleQuestion(id: "acceso_organismos", text: "¿Se mantienen accesibles las áreas para intervención de organismos de emergencia?", answerType: AnswerType.yn, points: 4),
+        ModuleQuestion(id: "condiciones_generales", text: "¿La industria mantiene condiciones generales adecuadas de almacenamiento, orden y control de combustibles?", answerType: AnswerType.yn, points: 6),
       ],
     ),
   ],
 );
 
-// =============================================================
-// MAPEO GENERAL
-// =============================================================
 final Map<String, ModuleTemplateSet> _templatesMap = {
   'comercio_pequeno': comercioPequenoTemplate,
   'comercio_grande': comercioGrandeTemplate,
@@ -365,9 +168,7 @@ final Map<String, ModuleTemplateSet> _templatesMap = {
   'industria': industriaTemplate,
 };
 
-ModuleTemplateSet templatesByType(String type) {
-  return _templatesMap[type] ?? comercioPequenoTemplate;
-}
+ModuleTemplateSet templatesByType(String type) => _templatesMap[type] ?? comercioPequenoTemplate;
 
 String normalizeTemplateCode(String? value) {
   final raw = (value ?? '').trim().toLowerCase();
