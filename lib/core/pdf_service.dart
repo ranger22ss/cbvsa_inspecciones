@@ -1,6 +1,7 @@
 // ignore_for_file: unused_import
 
 import 'dart:typed_data';
+import 'package:flutter/services.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -27,6 +28,96 @@ class PdfService {
 
     final fachadaBytes = await _loadNetworkImage(inspection.fotoFachadaUrl);
     final photoRows = await _buildPhotoRows(inspection.modules);
+
+    final logoData = await rootBundle.load('assets/images/app_logo.png');
+    final institutionalLogo = pw.MemoryImage(logoData.buffer.asUint8List());
+    const institutionalBlue = PdfColor.fromInt(0xFF0B2743);
+    const institutionalRed = PdfColor.fromInt(0xFFB52828);
+
+    final institutionalPageTheme = pw.PageTheme(
+      pageFormat: PdfPageFormat.a4,
+      buildBackground: (context) => pw.FullPage(
+        ignoreMargins: true,
+        child: pw.Stack(
+          children: [
+            pw.Positioned(
+              left: 5,
+              top: 5,
+              right: 5,
+              bottom: 5,
+              child: pw.Container(
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(color: institutionalBlue, width: 0.7),
+                ),
+              ),
+            ),
+            pw.Positioned(
+              left: 5,
+              top: 5,
+              right: 5,
+              height: 36,
+              child: pw.Container(
+                color: institutionalBlue,
+                padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                child: pw.Row(
+                  children: [
+                    pw.Container(
+                      width: 28,
+                      height: 28,
+                      padding: const pw.EdgeInsets.all(2),
+                      decoration: pw.BoxDecoration(
+                        color: PdfColors.white,
+                        borderRadius: pw.BorderRadius.circular(2),
+                      ),
+                      child: pw.Image(institutionalLogo, fit: pw.BoxFit.contain),
+                    ),
+                    pw.SizedBox(width: 9),
+                    pw.Expanded(
+                      child: pw.Column(
+                        mainAxisAlignment: pw.MainAxisAlignment.center,
+                        crossAxisAlignment: pw.CrossAxisAlignment.center,
+                        children: [
+                          pw.Text('CUERPO DE BOMBEROS VOLUNTARIOS', style: pw.TextStyle(color: PdfColors.white, fontSize: 9.2, fontWeight: pw.FontWeight.bold)),
+                          pw.Text('SAN ALBERTO - CESAR', style: pw.TextStyle(color: PdfColors.white, fontSize: 8.2, fontWeight: pw.FontWeight.bold)),
+                          pw.SizedBox(height: 1),
+                          pw.Text('Personería Jurídica No. 0015 del 14 de abril de 2009', style: const pw.TextStyle(color: PdfColors.white, fontSize: 5.2)),
+                          pw.Text('Resolución No. 007914 del 10 de julio de 2023 · NIT 900.279.175-3', style: const pw.TextStyle(color: PdfColors.white, fontSize: 5.2)),
+                        ],
+                      ),
+                    ),
+                    pw.SizedBox(
+                      width: 47,
+                      child: pw.Text('PÁGINA ${context.pageNumber} DE ${context.pagesCount}', textAlign: pw.TextAlign.right, style: pw.TextStyle(color: PdfColors.white, fontSize: 5.5, fontWeight: pw.FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            pw.Positioned(left: 5, top: 41, right: 5, height: 2, child: pw.Container(color: institutionalRed)),
+            pw.Positioned(
+              left: 5,
+              right: 5,
+              bottom: 5,
+              height: 31,
+              child: pw.Container(
+                color: institutionalBlue,
+                padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                child: pw.Column(
+                  mainAxisAlignment: pw.MainAxisAlignment.center,
+                  children: [
+                    pw.Text('DOCUMENTO OFICIAL · CUERPO DE BOMBEROS VOLUNTARIOS DE SAN ALBERTO', textAlign: pw.TextAlign.center, style: pw.TextStyle(color: PdfColors.white, fontSize: 6.2, fontWeight: pw.FontWeight.bold)),
+                    pw.SizedBox(height: 2),
+                    pw.Text('Calle 5 #7-44, barrio La Marina · San Alberto, Cesar', textAlign: pw.TextAlign.center, style: const pw.TextStyle(color: PdfColors.white, fontSize: 5.5)),
+                    pw.Text('Emergencias: 315 353 8706 · Atención: 300 175 1212', textAlign: pw.TextAlign.center, style: const pw.TextStyle(color: PdfColors.white, fontSize: 5.5)),
+                    pw.Text('cuerpobomberossanalberto@gmail.com', textAlign: pw.TextAlign.center, style: const pw.TextStyle(color: PdfColors.white, fontSize: 5.5)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
 
     final pdf = pw.Document();
 
@@ -202,6 +293,7 @@ class PdfService {
     // ---------- HOJA 1 ----------
     pdf.addPage(
       pw.Page(
+        pageTheme: institutionalPageTheme,
         build: (context) {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -267,6 +359,7 @@ class PdfService {
     // ---------- HOJA 2 Y SIGUIENTES (Información general y observaciones) ----------
     pdf.addPage(
       pw.MultiPage(
+        pageTheme: institutionalPageTheme,
         build: (context) {
           final widgets = <pw.Widget>[];
 
@@ -443,6 +536,7 @@ class PdfService {
     // ---------- HOJA 3 (Conclusión y Vigencia) ----------
     pdf.addPage(
       pw.Page(
+        pageTheme: institutionalPageTheme,
         build: (context) => pw.Column(
           crossAxisAlignment: pw.CrossAxisAlignment.start,
           children: [
@@ -495,6 +589,7 @@ class PdfService {
     if (photoRows.isNotEmpty) {
       pdf.addPage(
         pw.MultiPage(
+        pageTheme: institutionalPageTheme,
           build: (context) => [
             pw.Text('6. Registro fotográfico', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
             pw.SizedBox(height: 12),
