@@ -55,8 +55,8 @@ class PdfService {
               left: 5,
               top: 5,
               right: 5,
-              height: 36,
               child: pw.Container(
+                height: 36,
                 color: institutionalBlue,
                 padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 child: pw.Row(
@@ -93,13 +93,21 @@ class PdfService {
                 ),
               ),
             ),
-            pw.Positioned(left: 5, top: 41, right: 5, height: 2, child: pw.Container(color: institutionalRed)),
+            pw.Positioned(
+              left: 5,
+              top: 41,
+              right: 5,
+              child: pw.SizedBox(
+                height: 2,
+                child: pw.Container(color: institutionalRed),
+              ),
+            ),
             pw.Positioned(
               left: 5,
               right: 5,
               bottom: 5,
-              height: 31,
               child: pw.Container(
+                height: 31,
                 color: institutionalBlue,
                 padding: const pw.EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 child: pw.Column(
