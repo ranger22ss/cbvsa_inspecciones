@@ -562,8 +562,11 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
       final modulesJson = _buildModulesPayload();
       final aprobado = _score >= _template.passingScore;
 
+      final creatorId = widget.existing?['inspector_id'] ?? user.id;
+      final creatorJson = widget.existing?['inspector'] ?? inspectorJson;
+
       final payload = {
-        'inspector_id': user.id,
+        'inspector_id': creatorId,
         'radicado': _radicadoCtrl.text.trim(),
         'fecha_inspeccion': _fechaInspeccion!.toIso8601String(),
         'nombre_comercial': _nombreComCtrl.text.trim(),
@@ -584,7 +587,9 @@ class _NewInspectionWizardState extends ConsumerState<NewInspectionWizard> {
           'puntaje_minimo': _template.passingScore,
           'puntaje_maximo': _template.maxScore,
         },
-        'inspector': inspectorJson,
+        'inspector': creatorJson,
+        'last_editor_id': user.id,
+        'last_editor': inspectorJson,
         'updated_at': DateTime.now().toUtc().toIso8601String(),
       };
 
