@@ -50,17 +50,17 @@ class InspectionDetailPage extends ConsumerWidget {
               tooltip: 'Editar',
               icon: const Icon(Icons.edit),
               onPressed: () async {
-              final result = await Navigator.of(context).push<bool>(
-                MaterialPageRoute(
-                  builder: (_) => NewInspectionWizard(
-                    existing: Map<String, dynamic>.from(inspection),
-                    inspectionId: inspection['id']?.toString(),
+                final result = await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(
+                    builder: (_) => NewInspectionWizard(
+                      existing: Map<String, dynamic>.from(inspection),
+                      inspectionId: inspection['id']?.toString(),
+                    ),
                   ),
-                ),
-              );
-              if (result == true && context.mounted) {
-                Navigator.of(context).pop(true);
-              }
+                );
+                if (result == true && context.mounted) {
+                  Navigator.of(context).pop(true);
+                }
               },
             ),
           IconButton(
