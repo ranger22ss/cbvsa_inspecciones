@@ -1,0 +1,6 @@
+# Copiar como android/key.properties y reemplazar los valores localmente.
+# Nunca subir el archivo real ni la clave .jks al repositorio.
+storePassword=REEMPLAZAR_LOCALMENTE
+keyPassword=REEMPLAZAR_LOCALMENTE
+keyAlias=cbvsa
+storeFile=app/cbvsa-release.jks
