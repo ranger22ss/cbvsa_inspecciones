@@ -109,7 +109,7 @@ final estacionServicioTemplate = _makeTemplate(
         ModuleQuestion(id: "islas_abastecimiento", text: "¿Las islas de abastecimiento permanecen libres de acumulación de materiales combustibles?", answerType: AnswerType.yn, points: 4),
         ModuleQuestion(id: "corte_emergencia", text: "¿Existen dispositivos claramente identificados para suspensión o corte de emergencia del suministro?", answerType: AnswerType.yn, points: 7),
         ModuleQuestion(id: "parada_emergencia", text: "¿Los dispositivos de parada de emergencia se encuentran accesibles y operativos?", answerType: AnswerType.yn, points: 6),
-        ModuleQuestion(id: "fuentes_ignicion", text: "¿Se controla adecuadamente la presencia de fuentes de ignición?", answerType: AnswerType.yn, points: 6),
+        ModuleQuestion(id: "fuentes_ignicion", text: "¿Las tablas de aforo se encuentran en completo orden según la normativa y anexadas al plan de contingencia de la E.D.S.?", answerType: AnswerType.yn, points: 6),
         ModuleQuestion(id: "senalizacion_prohibiciones", text: "¿Existe señalización de prohibición de fumar, apagar motor y otras advertencias necesarias?", answerType: AnswerType.yn, points: 4),
         ModuleQuestion(id: "instalaciones_electricas", text: "¿Las instalaciones eléctricas de las zonas de riesgo presentan condiciones seguras?", answerType: AnswerType.yn, points: 6),
         ModuleQuestion(id: "tableros_electricos", text: "¿Los tableros eléctricos están protegidos, identificados y accesibles?", answerType: AnswerType.yn, points: 3),

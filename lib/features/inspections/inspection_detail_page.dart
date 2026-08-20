@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:printing/printing.dart';
 
 import '../../core/pdf_service.dart';
+import '../../core/providers.dart';
 import '../../core/templates.dart';
 import 'new_inspection_wizard.dart';
 
@@ -36,28 +37,32 @@ class InspectionDetailPage extends ConsumerWidget {
     final modules = (inspection['modules'] ?? []) as List;
 
     final scheme = Theme.of(context).colorScheme;
+    final currentUserId = ref.watch(supabaseProvider).auth.currentUser?.id;
+    final inspectorId = inspection['inspector_id']?.toString();
+    final canEdit = currentUserId != null && inspectorId == currentUserId;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Detalle de Inspección'),
         actions: [
-          IconButton(
-            tooltip: 'Editar',
-            icon: const Icon(Icons.edit),
-            onPressed: () async {
-              final result = await Navigator.of(context).push<bool>(
-                MaterialPageRoute(
-                  builder: (_) => NewInspectionWizard(
-                    existing: Map<String, dynamic>.from(inspection),
-                    inspectionId: inspection['id']?.toString(),
+          if (canEdit)
+            IconButton(
+              tooltip: 'Editar',
+              icon: const Icon(Icons.edit),
+              onPressed: () async {
+                final result = await Navigator.of(context).push<bool>(
+                  MaterialPageRoute(
+                    builder: (_) => NewInspectionWizard(
+                      existing: Map<String, dynamic>.from(inspection),
+                      inspectionId: inspection['id']?.toString(),
+                    ),
                   ),
-                ),
-              );
-              if (result == true && context.mounted) {
-                Navigator.of(context).pop(true);
-              }
-            },
-          ),
+                );
+                if (result == true && context.mounted) {
+                  Navigator.of(context).pop(true);
+                }
+              },
+            ),
           IconButton(
             tooltip: 'PDF',
             icon: const Icon(Icons.picture_as_pdf),
