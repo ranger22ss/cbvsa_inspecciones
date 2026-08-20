@@ -141,3 +141,4 @@ class _AppUpdateGateState extends State<AppUpdateGate> {
   @override
   Widget build(BuildContext context) => widget.child;
 }
+
