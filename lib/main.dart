@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 // Si tienes un theme propio, mantenlo; si no, puedes borrar esta import y usar el ThemeData simple
 import 'core/app_theme.dart';
+import 'core/app_update_gate.dart';
 import 'core/branding/app_branding.dart';
 
 // Importa el router que te pasé (con goRouterProvider)
@@ -36,6 +37,9 @@ class MyApp extends ConsumerWidget {
       // Si tienes buildAppTheme, úsalo; si no, usa el ThemeData simple.
       theme: buildAppTheme(Brightness.light),
       darkTheme: buildAppTheme(Brightness.dark),
+      builder: (context, child) => AppUpdateGate(
+        child: child ?? const SizedBox.shrink(),
+      ),
       // theme: ThemeData(useMaterial3: true, colorSchemeSeed: Colors.red),
     );
   }
