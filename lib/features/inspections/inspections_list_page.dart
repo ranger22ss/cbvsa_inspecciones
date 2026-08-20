@@ -14,7 +14,10 @@ final myInspectionsProvider =
   if (user == null) return [];
   final rows = await supabase
       .from('inspections')
-      .select()
+      .select(
+        'id, inspector_id, nombre_comercial, radicado, tipo_inspeccion, '
+        'resultado, fecha_inspeccion, created_at, foto_fachada_url',
+      )
       .order('created_at', ascending: false);
   return (rows as List).map((e) => Map<String, dynamic>.from(e)).toList();
 });
@@ -99,6 +102,10 @@ class InspectionsListPage extends ConsumerWidget {
                           width: 64,
                           height: 64,
                           fit: BoxFit.cover,
+                          cacheWidth: 128,
+                          cacheHeight: 128,
+                          filterQuality: FilterQuality.low,
+                          gaplessPlayback: true,
                           errorBuilder: (_, __, ___) => Container(
                             width: 64,
                             height: 64,
@@ -149,14 +156,50 @@ class InspectionsListPage extends ConsumerWidget {
                   ],
                 ),
                 onTap: () async {
-                  final updated = await Navigator.of(context).push<bool>(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          InspectionDetailPage(inspection: r),
+                  final inspectionId = r['id']?.toString();
+                  if (inspectionId == null || inspectionId.isEmpty) return;
+
+                  showDialog<void>(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => const Center(
+                      child: CircularProgressIndicator(),
                     ),
                   );
-                  if (updated == true) {
-                    ref.invalidate(myInspectionsProvider);
+
+                  try {
+                    final fullInspection = await ref
+                        .read(supabaseProvider)
+                        .from('inspections')
+                        .select()
+                        .eq('id', inspectionId)
+                        .single();
+
+                    if (!context.mounted) return;
+                    Navigator.of(context, rootNavigator: true).pop();
+
+                    final updated = await Navigator.of(context).push<bool>(
+                      MaterialPageRoute(
+                        builder: (_) => InspectionDetailPage(
+                          inspection: Map<String, dynamic>.from(
+                            fullInspection,
+                          ),
+                        ),
+                      ),
+                    );
+                    if (updated == true) {
+                      ref.invalidate(myInspectionsProvider);
+                    }
+                  } catch (error) {
+                    if (!context.mounted) return;
+                    Navigator.of(context, rootNavigator: true).pop();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'No fue posible abrir la inspección: $error',
+                        ),
+                      ),
+                    );
                   }
                 },
               );
