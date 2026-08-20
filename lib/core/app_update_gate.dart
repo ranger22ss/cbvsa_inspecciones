@@ -6,6 +6,8 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'app_router.dart';
+
 class AppUpdateGate extends StatefulWidget {
   const AppUpdateGate({super.key, required this.child});
 
@@ -77,9 +79,12 @@ class _AppUpdateGateState extends State<AppUpdateGate> {
 
       if (!belowLatest || downloadUrl.isEmpty || !mounted) return;
 
+      final navigatorContext = rootNavigatorKey.currentContext;
+      if (navigatorContext == null) return;
+
       _dialogVisible = true;
       await showDialog<void>(
-        context: context,
+        context: navigatorContext,
         barrierDismissible: !mustUpdate,
         builder: (dialogContext) {
           return PopScope(
@@ -107,7 +112,7 @@ class _AppUpdateGateState extends State<AppUpdateGate> {
                           mode: LaunchMode.externalApplication,
                         )) {
                       if (dialogContext.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
+                        ScaffoldMessenger.of(navigatorContext).showSnackBar(
                           const SnackBar(
                             content: Text(
                               'No fue posible abrir la descarga oficial.',
