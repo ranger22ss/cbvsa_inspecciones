@@ -48,8 +48,8 @@ class InspectionDetailPage extends ConsumerWidget {
           if (canEdit)
             IconButton(
               tooltip: 'Editar',
-            icon: const Icon(Icons.edit),
-            onPressed: () async {
+              icon: const Icon(Icons.edit),
+              onPressed: () async {
               final result = await Navigator.of(context).push<bool>(
                 MaterialPageRoute(
                   builder: (_) => NewInspectionWizard(
@@ -61,8 +61,8 @@ class InspectionDetailPage extends ConsumerWidget {
               if (result == true && context.mounted) {
                 Navigator.of(context).pop(true);
               }
-            },
-          ),
+              },
+            ),
           IconButton(
             tooltip: 'PDF',
             icon: const Icon(Icons.picture_as_pdf),
