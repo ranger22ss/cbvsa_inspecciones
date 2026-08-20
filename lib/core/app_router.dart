@@ -13,6 +13,8 @@ import '../features/inspections/inspections_list_page.dart';
 import '../features/inspections/new_inspection_wizard.dart';
 import '../features/inspections/summary_conclusion_page.dart';
 
+final rootNavigatorKey = GlobalKey<NavigatorState>();
+
 class Routes {
   const Routes._();
 
@@ -49,6 +51,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   final supabase = Supabase.instance.client;
 
   return GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: '/home',
     refreshListenable: GoRouterRefreshStream(
       supabase.auth.onAuthStateChange, // refresca al login/logout
