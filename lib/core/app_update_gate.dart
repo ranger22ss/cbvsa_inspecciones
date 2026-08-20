@@ -30,7 +30,8 @@ class _AppUpdateGateState extends State<AppUpdateGate> {
   List<int> _versionParts(String value) {
     return value
         .split('.')
-        .map((part) => int.tryParse(part.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0)
+        .map(
+            (part) => int.tryParse(part.replaceAll(RegExp(r'[^0-9]'), '')) ?? 0)
         .toList();
   }
 
@@ -69,18 +70,16 @@ class _AppUpdateGateState extends State<AppUpdateGate> {
       final releaseNotes = (release['release_notes'] ?? '').toString();
       final forceUpdate = release['force_update'] == true;
 
-      final belowMinimum =
-          minimumVersion.isNotEmpty &&
+      final belowMinimum = minimumVersion.isNotEmpty &&
           _isOlder(packageInfo.version, minimumVersion);
-      final belowLatest =
-          latestVersion.isNotEmpty &&
+      final belowLatest = latestVersion.isNotEmpty &&
           _isOlder(packageInfo.version, latestVersion);
       final mustUpdate = belowMinimum || (forceUpdate && belowLatest);
 
       if (!belowLatest || downloadUrl.isEmpty || !mounted) return;
 
       final navigatorContext = rootNavigatorKey.currentContext;
-      if (navigatorContext == null) return;
+      if (navigatorContext == null || !navigatorContext.mounted) return;
 
       _dialogVisible = true;
       await showDialog<void>(
