@@ -178,18 +178,18 @@ class InspectionsListPage extends ConsumerWidget {
                     if (!context.mounted) return;
                     Navigator.of(context, rootNavigator: true).pop();
 
-                    final updated = await Navigator.of(context).push<bool>(
-                      MaterialPageRoute(
+                  final updated = await Navigator.of(context).push<bool>(
+                    MaterialPageRoute(
                         builder: (_) => InspectionDetailPage(
                           inspection: Map<String, dynamic>.from(
                             fullInspection,
                           ),
                         ),
-                      ),
-                    );
-                    if (updated == true) {
-                      ref.invalidate(myInspectionsProvider);
-                    }
+                    ),
+                  );
+                  if (updated == true) {
+                    ref.invalidate(myInspectionsProvider);
+                  }
                   } catch (error) {
                     if (!context.mounted) return;
                     Navigator.of(context, rootNavigator: true).pop();
@@ -226,6 +226,7 @@ class InspectionsListPage extends ConsumerWidget {
     );
   }
 }
+
 
 
 
