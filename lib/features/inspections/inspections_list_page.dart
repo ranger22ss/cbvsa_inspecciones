@@ -15,7 +15,6 @@ final myInspectionsProvider =
   final rows = await supabase
       .from('inspections')
       .select()
-      .eq('inspector_id', user.id)
       .order('created_at', ascending: false);
   return (rows as List).map((e) => Map<String, dynamic>.from(e)).toList();
 });
@@ -49,11 +48,11 @@ class InspectionsListPage extends ConsumerWidget {
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis inspecciones')),
+      appBar: AppBar(title: const Text('Inspecciones realizadas')),
       body: asyncList.when(
         data: (rows) {
           if (rows.isEmpty) {
-            return const Center(child: Text('Todavía no hay inspecciones.'));
+            return const Center(child: Text('Todavía no hay inspecciones registradas.'));
           }
           return ListView.separated(
             itemCount: rows.length,
